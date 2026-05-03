@@ -60,9 +60,11 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
           <SpeedInsights/>
           <header className="p-4 relative">
-            <h1 className="text-2xl font-bold rounded text-center w-full">
-              Trackolymp.tech
-            </h1>
+            <div className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8">
+              <Link className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8" href="/">
+                Trackolymp.tech
+              </Link>
+            </div>
             <div className="absolute top-0.5 bottom-2 right-4 flex items-center gap-4 mr-4 h-full">
               <SignedOut>
                 <SignInButton>

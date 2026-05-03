@@ -64,15 +64,12 @@ export default function Dashboard() {
                         placeholder="Enter Olympiad URL"
                         className="border p-2 rounded w-full"
                     />
-                    <button
-                        type="submit"
-                        className="golden-button"
-                    >
+                    <button type="submit" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out">
                         Parse
                     </button>
                 </form>
-                <button type="button" className="golden-button" onClick={() => router.push("/manage")}> Manage Events </button>
-                <button type="button" className="golden-button" onClick={() => router.push("/my_olympiads")}> My Olympiads </button>
+                <button type="button" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/manage")}> Manage Events </button>
+                <button type="button" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/my_olympiads")}> My Olympiads </button>
             </div>
             {/* Calendar Component */}
             <div className="flex flex-row items-top mt-30 gap-10">

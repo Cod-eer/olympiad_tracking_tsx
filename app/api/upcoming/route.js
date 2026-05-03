@@ -35,7 +35,8 @@ export async function GET(req) {
           olympiads (name)
         )
       `)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .limit(limit, { foreignTable: 'olympiad_events' });
 
     if (eventsError) {
       throw eventsError;

@@ -131,7 +131,7 @@ export default function Landing() {
                     />
                     <button
                         type="submit"
-                        className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white"
+                        className="rounded-lg bg-slate-800 px-4 py-2 m-3 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out"
                     >
                         Run Manager Parser Demo
                     </button>
