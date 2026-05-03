@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAuth } from "@clerk/nextjs/server";
 import { createClient } from '@supabase/supabase-js';
+import { addDeadlineUrgency } from '../../../lib/deadlines.js';
 
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -35,11 +36,14 @@ export async function GET(req) {
     if (error) throw error;
 
     // Map results to calendar-friendly format
-    const events = eventsData.map((ea) => ({
-      title: `${ea.olympiad_events.olympiads.name} - ${ea.olympiad_events.action}`,
-      start: ea.olympiad_events.date_start,
-      end: ea.olympiad_events.date_end,
-    }));
+    const events = (eventsData ?? [])
+      .map((ea) => ea.olympiad_events)
+      .filter(Boolean)
+      .map((event) => addDeadlineUrgency({
+        title: `${event.olympiads?.name ?? 'Olympiad'} - ${event.action}`,
+        start: event.date_start,
+        end: event.date_end,
+      }));
 
     return NextResponse.json(events);
   } catch (err) {

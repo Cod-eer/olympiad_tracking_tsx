@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getAuth } from "@clerk/nextjs/server";
 import { createClient } from '@supabase/supabase-js';
+import { addDeadlineUrgency, isUpcomingDeadline, sortByDeadlineUrgency } from '../../../lib/deadlines.js';
 
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -36,20 +37,23 @@ export async function GET(req) {
         )
       `)
       .eq('user_id', userId)
-      .limit(limit);
 
     if (eventsError) {
       throw eventsError;
     }
     // map
-    const upcoming_events = eventsData.map((row) => ({
-      id: row.olympiad_events.id,
-      olympiad_id: row.olympiad_events.olympiad_id,
-      name: row.olympiad_events.olympiads.name,
-      action: row.olympiad_events.action,
-      start: row.olympiad_events.date_start,
-      end: row.olympiad_events.date_end,
-    }));
+    const upcoming_events = eventsData
+      .map((row) => addDeadlineUrgency({
+        id: row.olympiad_events.id,
+        olympiad_id: row.olympiad_events.olympiad_id,
+        name: row.olympiad_events.olympiads.name,
+        action: row.olympiad_events.action,
+        start: row.olympiad_events.date_start,
+        end: row.olympiad_events.date_end,
+      }))
+      .filter(isUpcomingDeadline)
+      .sort(sortByDeadlineUrgency)
+      .slice(0, limit);
 
     return NextResponse.json(upcoming_events);
   } catch (err) {
