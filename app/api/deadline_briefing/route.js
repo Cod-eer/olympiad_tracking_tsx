@@ -102,14 +102,58 @@ async function getDeadlineEventsForUser(userId, lookaheadDays) {
     .sort(sortByDeadlineUrgency);
 }
 
+async function getAllTrackedUserIds() {
+  const { data, error } = await supabase
+    .from('event_access')
+    .select('user_id');
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.from(new Set((data ?? []).map((row) => row.user_id).filter(Boolean)));
+}
+
+function buildReminder(events, reminderDays) {
+  const eventWord = events.length === 1 ? 'event' : 'events';
+  const dayLabel = reminderDays.join(' & ');
+  const subject = `Reminder: ${events.length} upcoming ${eventWord} (${dayLabel} day notice)`;
+
+  const textLines = [
+    subject,
+    '',
+    ...events.map((event) => (
+      `- ${event.name}: ${event.action} due ${formatBriefingDate(event.deadline)} (${event.deadlineStatus})`
+    )),
+  ];
+
+  const itemsHtml = events.map((event) => `
+    <li style="margin:0 0 14px;padding:12px;border-left:4px solid ${event.borderColor};background:${event.backgroundColor};color:${event.textColor};">
+      <strong>${escapeHtml(event.name)}</strong>
+      <div>${escapeHtml(event.action)}</div>
+      <div style="font-size:13px;margin-top:4px;">
+        ${escapeHtml(formatBriefingDate(event.deadline))} - ${escapeHtml(event.deadlineStatus)}
+      </div>
+    </li>
+  `).join('');
+
+  return {
+    subject,
+    text: textLines.join('\n'),
+    html: `<div style="font-family:Arial,sans-serif;line-height:1.5;color:#0f172a;">
+            <h1 style="font-size:22px;margin:0 0 8px;">${escapeHtml(subject)}</h1>
+            <ul style="list-style:none;margin:0;padding:0;">${itemsHtml}</ul>
+          </div>`,
+  };
+}
+
 function buildBriefing(events, lookaheadDays) {
   const windowLabel = getWindowLabel(lookaheadDays);
   const deadlineWord = events.length === 1 ? 'deadline' : 'deadlines';
   const uniqueNames = Array.from(new Set(events.map((event) => event.name).filter(Boolean)));
   const namesPreview = uniqueNames.slice(0, 3).join(', ');
-  const subject = namesPreview
-    ? `${events.length} ${deadlineWord} ${windowLabel}: ${namesPreview}`
-    : `${events.length} ${deadlineWord} ${windowLabel}`;
+  const title = `${events.length} ${deadlineWord} ${windowLabel}`;
+  const subject = namesPreview ? `${title}: ${namesPreview}` : title;
 
   const textLines = [
     subject,
@@ -132,13 +176,12 @@ function buildBriefing(events, lookaheadDays) {
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.5;color:#0f172a;">
       <h1 style="font-size:22px;margin:0 0 8px;">${escapeHtml(subject)}</h1>
-      <p style="margin:0 0 18px;color:#475569;">Urgency uses 1 / (days_to_deadline + 1), with red for critical deadlines under 3 days and yellow for deadlines under 10 days.</p>
       <ul style="list-style:none;margin:0;padding:0;">${itemsHtml}</ul>
     </div>
   `;
 
   return {
-    subject,
+    title,
     text: textLines.join('\n'),
     html,
   };
@@ -215,7 +258,9 @@ export async function POST(req) {
     const briefing = buildBriefing(events, lookaheadDays);
     const result = await sendResendEmail({
       to: email,
-      ...briefing,
+      subject: briefing.title,
+      text: briefing.text,
+      html: briefing.html,
     });
 
     return NextResponse.json({
@@ -228,8 +273,60 @@ export async function POST(req) {
   } catch (error) {
     console.error('Error sending deadline briefing:', error);
     return NextResponse.json(
-      { error: 'Failed to send deadline briefing', details: error.message },
+      { error: 'Failed to send deadline briefing',
+        details: error.message
+      },
       { status: 500 }
     );
+  }
+}
+
+export async function GET(req) {
+  try {
+    const { userId } = getAuth(req);
+
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const reminderDays = [3, 7];
+    const mode = new URL(req.url).searchParams.get('mode') ?? 'all';
+    const sendWeekly = mode === 'all' || mode === 'weekly';
+    const sendReminder = mode === 'all' || mode === 'reminder';
+
+    const users = await getAllTrackedUserIds();
+    const summary = { users: users.length, mode, weeklySent: 0, reminderSent: 0, errors: 0 };
+
+    for (const userId of users) {
+      try {
+        const email = await getCurrentUserEmail(userId);
+        const weeklyEvents = await getDeadlineEventsForUser(userId, 7);
+        const reminderEvents = weeklyEvents.filter((event) => reminderDays.includes(Math.ceil(event.daysToDeadline)));
+
+        if (!email) {
+          continue;
+        }
+
+        if (sendWeekly && weeklyEvents.length > 0) {
+          const briefing = buildBriefing(weeklyEvents, 7);
+          await sendResendEmail({ to: email, ...briefing });
+          summary.weeklySent += 1;
+        }
+
+        if (sendReminder && reminderEvents.length > 0) {
+          const reminder = buildReminder(reminderEvents, reminderDays);
+          await sendResendEmail({ to: email, ...reminder });
+          summary.reminderSent += 1;
+        }
+      } catch (error) {
+        summary.errors += 1;
+        console.error(`Failed deadline emails for user ${userId}:`, error);
+      }
+    }
+
+    return NextResponse.json({ success: true, ...summary });
+  } catch (error) {
+    console.error('Error running deadline briefing cron:', error);
+    return NextResponse.json({ error: 'Failed to run deadline briefing cron', details: error.message }, { status: 500 });
   }
 }

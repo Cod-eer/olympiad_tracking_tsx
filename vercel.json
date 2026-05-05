@@ -3,6 +3,16 @@
     "app/api/**/*.js": {
       "includeFiles": "node_modules/playwright/**"
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/deadline_briefing?mode=weekly",
+      "schedule": "0 9 * * 0"
+    },
+    {
+      "path": "/api/deadline_briefing?mode=reminder",
+      "schedule": "0 5 * * *"
+    }
+  ]
 }
 
