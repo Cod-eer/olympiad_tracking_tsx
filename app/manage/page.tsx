@@ -209,34 +209,36 @@ export default function ManageEventsPage() {
   return (
     <main className="mx-auto flex max-w-9xl flex-col gap-6 p-6">
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between items-center">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-center items-center">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Manager</p>
             <h2 className="text-3xl font-semibold text-slate-900">Manage your olympiad events</h2>
             <p className="mt-2 max-w-2xl text-slate-600">
-              Create events with start and end dates, connect them to an existing olympiad, or add a brand new olympiad while creating the event.
+              Create events, connect them to an existing olympiad, or add a new olympiad.
             </p>
           </div>
           {(status || error) && (
-            <div className={`inline-flex border border-slate-200 mt-5 rounded-lg px-10 py-4 text-sm ${error ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+            <div className={`inline-flex border border-slate-200 rounded-lg px-10 py-4 text-sm ${error ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
               {error ?? status}
             </div>
           )}
           {isEditing && (
-            <button className="inline-flex rounded-lg bg-red-100 text-red-700 px-15 py-4 text-sm font-medium hover:bg-red-400 hover:text-slate-900 duration-300 ease-in" type="button" onClick={resetForm}>
-              Cancel edit
-            </button>
+            <div className="flex items-center m-3">
+              <button className="inline-flex rounded-lg items-center bg-red-100 text-red-700 px-13 py-4 text-sm font-medium hover:bg-red-400 hover:text-slate-900 hover:px-10.5 hover:py-4.5 duration-300 ease-in-out" type="button" onClick={resetForm}>
+                Cancel edit
+              </button>
+            </div>
           )}
           <div className="flex items-center m-3">
-            <Link className="inline-flex rounded-lg border bg-slate-800 px-10 py-4 text-sm font-medium text-white hover:bg-slate-600 hover:text-slate-900 hover:px-10.5 hover:py-4.5 duration-300 ease-in-out" href="/">
+            <Link className="inline-flex rounded-lg items-center border bg-slate-800 px-13 py-4 text-sm font-medium text-white hover:bg-slate-600 hover:text-slate-200 hover:px-10.5 hover:py-4.5 duration-300 ease-in-out" href="/">
               Back to calendar
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] width-full">
-        <form className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex-col align-normal justify-start gap-3px" onSubmit={handleSubmit}>
+      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] width-full display-flex align-start items-start">
+        <form className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex-col align-normal items-start gap-3px" onSubmit={handleSubmit}>
           <div className="flex items-center justify-between gap-4">
             <div>
               <h3 className="text-xl font-semibold text-slate-900">{isEditing ? "Edit event" : "Create event"}</h3>

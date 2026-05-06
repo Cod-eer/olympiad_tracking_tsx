@@ -263,6 +263,16 @@ export async function POST(req) {
       html: briefing.html,
     });
 
+    for (const event of events) {
+      await supabase.from('email_logs').insert({
+        user_id: userId,
+        event_id: event.id,
+        reminder_day: lookaheadDays,
+        type: 'requested_briefing',
+        sent_at: new Date().toISOString(),
+        text: briefing.text
+      });
+    }
     return NextResponse.json({
       success: true,
       sent: true,
@@ -310,12 +320,32 @@ export async function GET(req) {
         if (sendWeekly && weeklyEvents.length > 0) {
           const briefing = buildBriefing(weeklyEvents, 7);
           await sendResendEmail({ to: email, ...briefing });
+          for (const event of weeklyEvents) {
+            await supabase.from('email_logs').insert({
+              user_id: userId,
+              event_id: event.id,
+              reminder_day: 7,
+              type: 'weekly_reminder',
+              sent_at: new Date().toISOString(),
+              text: briefing.text
+            });
+          }
           summary.weeklySent += 1;
         }
 
         if (sendReminder && reminderEvents.length > 0) {
           const reminder = buildReminder(reminderEvents, reminderDays);
           await sendResendEmail({ to: email, ...reminder });
+          for (const event of weeklyEvents) {
+            await supabase.from('email_logs').insert({
+              user_id: userId,
+              event_id: event.id,
+              reminder_day: 37,
+              type: 'deadline_reminder',
+              sent_at: new Date().toISOString(),
+              text: briefing.text
+            });
+          }
           summary.reminderSent += 1;
         }
       } catch (error) {
