@@ -1,10 +1,10 @@
 "use client";
 
+import "./globals.css";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import Calendar from "./components/fullcalendar";
 import LoadingOverlay from "./components/loading";
-import "./globals.css";
 import UpcomingEvents from "./components/upcoming-events";
 
 interface Event {
@@ -40,7 +40,6 @@ const managerDemoFeatures = [
 export default function Landing() {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const [events, setEvents] = useState<Event[]>([]);
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -70,6 +69,7 @@ export default function Landing() {
         }
     }
 
+    const [events, setEvents] = useState<Event[]>([]);
     useEffect(() => {
         fetch("/api/show_events")
             .then((res) => res.json())

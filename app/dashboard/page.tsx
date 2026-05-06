@@ -1,10 +1,13 @@
 "use client";
+
+import "../globals.css";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import Calendar from "../components/fullcalendar";
 import LoadingOverlay  from "../components/loading";
-import "../globals.css";
 import UpcomingEvents from "../components/upcoming-events";
+import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
 
 
 interface Event {
@@ -52,6 +55,24 @@ export default function Dashboard() {
             .then((data) => setEvents(data))
             .catch((err) => console.error(err));
     }, []);
+
+    const { isSignedIn, isLoaded } = useUser();
+
+    if (!isSignedIn) {
+      return (
+        <main className="mx-auto max-w-3xl p-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+            <h2 className="text-2xl font-semibold text-slate-900">Sign in to view your events</h2>
+            <p className="mt-3 text-slate-600">
+              The dashboard is tied to your account so you can view your own olympiad timeline entries.
+            </p>
+            <Link className="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 hover:px-4.5 hover:py-3 duration-300 ease-in-out" href="/">
+              Return home
+            </Link>
+          </div>
+        </main>
+      );
+    }
 
     return (
         <main className="p-6">

@@ -5,7 +5,7 @@ import { redirect, useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-const router = useRouter();
+
 
 type Olympiad = {
   id: number;
@@ -132,6 +132,7 @@ export default function OlympiadDetailsPage() {
       }
 
       setStatus("Olympiad deleted successfully.");
+      const router = useRouter();
       router.push("/my_olympiads");
       router.refresh();
     } catch (deleteError) {
