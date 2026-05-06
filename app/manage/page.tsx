@@ -218,7 +218,7 @@ export default function ManageEventsPage() {
             </p>
           </div>
           {(status || error) && (
-            <div className={`inline-flex border border-slate-200 rounded-lg px-10 py-4 text-sm ${error ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
+            <div className={`flex items-center m-3 inline-flex rounded-lg items-center border border-slate-200 rounded-lg px-10 py-4 text-sm ${error ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>
               {error ?? status}
             </div>
           )}
