@@ -175,10 +175,10 @@ export default function OlympiadDetailsPage() {
       ) : (
         <>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Olympiad</p>
-                <h1 className="text-3xl font-bold text-slate-900">{olympiad.name}</h1>
+                <h1 className="text-xl font-semibold uppercase tracking-[0.2em] text-slate-500">{olympiad.name}</h1>
                 {olympiad.url && (
                   <a href={olympiad.url} target="_blank" rel="noreferrer" className="mt-2 inline-flex text-sm font-medium text-blue-600 hover:underline">
                     Visit olympiad website
@@ -188,14 +188,14 @@ export default function OlympiadDetailsPage() {
               <button
                 type="button"
                 onClick={() => setIsEditOpen(true)}
-                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
               >
                 Edit olympiad
               </button>
               <button
                 type="button"
                 onClick={handleOlympiadDelete}
-                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white"
+                className="rounded-lg bg-red-700 px-4 py-3 text-sm font-semibold text-white hover:bg-red-500 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
               >
                 Delete olympiad
               </button>
@@ -223,18 +223,16 @@ export default function OlympiadDetailsPage() {
 
           {isEditOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-              <form onSubmit={handleOlympiadUpdate} className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
+              <form onSubmit={handleOlympiadUpdate} className="flex flex-col w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
                 <h2 className="text-xl font-semibold text-slate-900">Edit olympiad</h2>
-                <p className="mt-1 text-sm text-slate-500">Update olympiad metadata shared by all related events.</p>
-
-                <div className="mt-5 grid gap-4">
-                  <label className="grid gap-2 text-sm font-medium text-slate-700">
+                <div className="mt-5 grid w-full gap-4">
+                  <label className="grid gap-2 w-full text-sm font-medium text-slate-700">
                     Olympiad name
                     <input
                       required
                       className="rounded-lg border border-slate-300 px-3 py-2"
                       value={editName}
-                      onChange={(event) => setEditName(event.target.value)}
+                      onChange={(e) => setEditName(e.target.value)}
                     />
                   </label>
 
@@ -244,16 +242,25 @@ export default function OlympiadDetailsPage() {
                       type="url"
                       className="rounded-lg border border-slate-300 px-3 py-2"
                       value={editUrl}
-                      onChange={(event) => setEditUrl(event.target.value)}
+                      onChange={(e) => setEditUrl(e.target.value)}
                     />
                   </label>
                 </div>
 
                 <div className="mt-6 flex justify-end gap-2">
-                  <button type="button" onClick={() => setIsEditOpen(false)} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditOpen(false)}
+                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:px-4.5 hover:py-2.5 hover:text-slate-900 duration-300 hover:cursor-pointer"
+                  >
                     Cancel
                   </button>
-                  <button type="submit" disabled={isSaving} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">
+
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 hover:bg-slate-700 hover:px-4.5 hover:py-2.5 hover:text-white duration-300 hover:cursor-pointer"
+                  >
                     {isSaving ? "Saving…" : "Save changes"}
                   </button>
                 </div>

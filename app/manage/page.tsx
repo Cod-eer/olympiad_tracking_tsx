@@ -374,10 +374,10 @@ export default function ManageEventsPage() {
                       )}
                     </div>
                     <div className="flex gap-2">
-                      <button className="appearance-none rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 hover:text-slate-900 duration-300 ease-in" type="button" onClick={() => startEditing(event)}>
+                      <button className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-700 hover:px-3.5 hover:py-1.5 duration-300 hover:cursor-pointer" type="button" onClick={() => startEditing(event)}>
                         Edit
                       </button>
-                      <button className="rounded-lg bg-red-100 text-red-700 px-3 py-2 text-sm font-medium hover:bg-red-400 hover:text-slate-900 duration-300 ease-in" type="button" onClick={() => handleDelete(event.id)}>
+                      <button className="rounded-md bg-red-700 px-3 py-2 text-sm font-semibold text-white hover:bg-red-500 hover:px-3.5 hover:py-1.5 duration-300" type="button" onClick={() => handleDelete(event.id)}>
                         Delete
                       </button>
                     </div>
