@@ -21,7 +21,7 @@ export async function GET(req, { params }) {
 
     const { data: olympiadData, error: olmpiadError } = await supabase
       .from('olympiads')
-      .select('id, name, url, organizers, description, rewards, requirements')
+      .select('id, name, url, organizers, fees, rewards, requirements')
       .eq('id', OlympiadId)
       .limit(1);
     if (olmpiadError) {

@@ -12,6 +12,7 @@ type Olympiad = {
   name: string;
   url?: string | null;
   organizers?: string | null;
+  fees?: string | null;
   rewards?: string | null;
   requirements?: string | null;
 };
@@ -194,12 +195,16 @@ export default function OlympiadDetailsPage() {
                   <p className="mt-1 text-slate-600">{olympiad.organizers || "Not provided"}</p>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-900">Prizes</p>
-                  <p className="mt-1 text-slate-600">{olympiad.rewards || "Not provided"}</p>
+                  <p className="font-semibold text-slate-900">Fees</p>
+                  <p className="mt-1 text-slate-600">{olympiad.fees || "Not provided"}</p>
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p className="font-semibold text-slate-900">Eligibility</p>
                   <p className="mt-1 text-slate-600">{olympiad.requirements || "Not provided"}</p>
+                </div>
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                  <p className="font-semibold text-slate-900">Prizes</p>
+                  <p className="mt-1 text-slate-600">{olympiad.rewards || "Not provided"}</p>
                 </div>
               </div>
               <button
