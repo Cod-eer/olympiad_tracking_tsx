@@ -58,6 +58,9 @@ export default function ManageEventsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const EVENTS_PER_PAGE = 3;
 
   const isEditing = form.eventId !== null;
   const isCreatingOlympiad = form.olympiadId === "new";
@@ -92,7 +95,35 @@ export default function ManageEventsPage() {
     }
   }, [isLoaded, isSignedIn]);
 
-  const adminEvents = useMemo(() => events.filter((event) => event.role === "admin"), [events]);
+  const editableEvents = events;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const filteredEvents = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return editableEvents;
+
+    return editableEvents.filter((event) =>
+      event.olympiadName.toLowerCase().includes(query) ||
+      event.description.toLowerCase().includes(query)
+    );
+  }, [editableEvents, searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / EVENTS_PER_PAGE));
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const paginatedEvents = useMemo(() => {
+    const start = (currentPage - 1) * EVENTS_PER_PAGE;
+    return filteredEvents.slice(start, start + EVENTS_PER_PAGE);
+  }, [filteredEvents, currentPage]);
+
 
   function resetForm() {
     setForm(emptyForm);
@@ -349,16 +380,24 @@ export default function ManageEventsPage() {
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <div>
             <h3 className="text-xl font-semibold text-slate-900">Your editable events</h3>
-            <p className="mt-1 text-sm text-slate-500">Only events where you have admin access can be edited or deleted here.</p>
+            <div className="mt-4">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search by olympiad or event"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              />
+            </div>
           </div>
 
-          {adminEvents.length === 0 ? (
+          {filteredEvents.length === 0 ? (
             <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-sm text-slate-600">
               You do not have any editable events yet. Create one with the form to get started.
             </div>
           ) : (
             <div className="mt-6 space-y-4">
-              {adminEvents.map((event) => (
+              {paginatedEvents.map((event) => (
                 <article key={event.id} className="rounded-xl border border-slate-200 p-4">
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
@@ -384,6 +423,29 @@ export default function ManageEventsPage() {
                   </div>
                 </article>
               ))}
+            </div>
+          )}
+          {filteredEvents.length > 0 && (
+            <div className="mt-6 flex items-center justify-between text-sm text-slate-600">
+              <span>Page {currentPage} of {totalPages}</span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-md border border-slate-300 px-3 py-1 disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
             </div>
           )}
         </section>

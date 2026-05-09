@@ -52,7 +52,7 @@ export async function GET(req) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const [{ data: eventAccess, error: eventsError }] = await Promise.all([supabase
+    const { data: eventAccess, error: eventsError } = await supabase
         .from('event_access')
         .select(`
           event_id,
@@ -67,7 +67,7 @@ export async function GET(req) {
           )
         `)
         .eq('user_id', userId)
-        .order('event_id', { ascending: true })]);
+        .order('event_id', { ascending: true });
 
     if (eventsError) {
       throw eventsError;
