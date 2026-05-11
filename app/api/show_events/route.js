@@ -25,6 +25,9 @@ export async function GET(req) {
         event_id,
         role,
         olympiad_events (
+          id,
+          olympiad_id,
+          completed,
           action,
           date_start,
           date_end,
@@ -40,6 +43,9 @@ export async function GET(req) {
       .map((ea) => ea.olympiad_events)
       .filter(Boolean)
       .map((event) => addDeadlineUrgency({
+        id: event.id,
+        olympiad_id: event.olympiad_id,
+        completed: Boolean(event.completed),
         title: `${event.olympiads?.name ?? 'Olympiad'} - ${event.action}`,
         start: event.date_start,
         end: event.date_end,

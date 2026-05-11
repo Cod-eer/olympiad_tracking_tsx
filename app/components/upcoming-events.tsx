@@ -10,6 +10,7 @@ interface Event {
     action: string;
     start: string;
     end: string;
+    completed?: boolean;
     deadline?: string | null;
     daysToDeadline?: number | null;
     urgency?: number;
@@ -44,6 +45,11 @@ const urgencyStyles: Record<string, { item: string; badge: string; bar: string }
         badge: "bg-slate-100 text-slate-700 ring-slate-200",
         bar: "bg-slate-400",
     },
+    completed: {
+        item: "border-green-300 bg-green-50",
+        badge: "bg-green-100 text-green-800 ring-green-200",
+        bar: "bg-green-500",
+    }
 };
 
 function formatDate(value?: string | null) {
@@ -146,16 +152,16 @@ export default function UpcomingEvents({ limit }: { limit: number }) {
             <ul className="w-full space-y-4">
                 {upcoming_events.map((event) => {
                     const level = event.urgencyLevel ?? "unknown";
-                    const styles = urgencyStyles[level] ?? urgencyStyles.unknown;
                     const urgencyScore = typeof event.urgency === "number" ? event.urgency.toFixed(2) : "0.00";
-
+                    const isCompleted = Boolean(event.completed);
+                    const styles = (isCompleted ? urgencyStyles.completed : urgencyStyles[level]) ?? urgencyStyles.unknown;
                     return (
-                        <li key={`${event.id}-${event.olympiad_id}`} className={`relative overflow-hidden rounded-lg border p-4 shadow-sm transition duration-300 hover:shadow-md ${styles.item}`}>
+                        <li key={`${event.id}-${event.olympiad_id}`} className={`relative overflow-hidden rounded-lg border p-4 shadow-sm transition duration-300 hover:shadow-md ${styles.item} ${isCompleted ? "opacity-50" : ""}`}>
                             <div className={`absolute bottom-0 left-0 top-0 w-1 ${styles.bar}`} />
                             <div className="flex flex-col gap-2 pl-2">
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
-                                        <div className="font-semibold text-slate-950">{event.name}</div>
+                                        <div className="font-semibold text-slate-950">{event.name} {isCompleted ? "(Completed)" : ""}</div>
                                         <div className="text-sm text-slate-700">{event.action}</div>
                                     </div>
                                     <span className={`inline-flex w-fit rounded-full px-2 py-1 text-xs font-semibold ring-1 ${styles.badge}`}>

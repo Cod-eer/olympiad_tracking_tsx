@@ -11,9 +11,11 @@ import { useUser } from "@clerk/nextjs";
 
 
 interface Event {
-    title: string;
-    start: string;
-    end?: string;
+  id?: number;
+  olympiadId?: number;
+  title: string;
+  start: string;
+  end?: string;
 }
 
 export default function Dashboard() {

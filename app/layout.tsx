@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import {
   ClerkProvider,
@@ -12,16 +11,6 @@ import {
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -54,10 +43,8 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
           <meta name="twitter:title" content={title} />
           <meta name="twitter:description" content={description} />
 
-          {/*<meta name="robots" content="index, follow" />
-          <link rel="manifest" href="/site.webmanifest" />*/}
         </head>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <body className={`--font-geist-sans --font-geist-mono antialiased`}>
           <SpeedInsights/>
           <header className="p-4 relative">
             <div className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8">
@@ -81,6 +68,9 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
               <SignedIn>
                 <Link href="/dashboard" className="rounded-full border border-[#6c47ff] px-4 py-2 text-sm font-medium text-[#6c47ff] transition hover:bg-[#f2edff]">
                   Dashboard
+                </Link>
+                <Link href="/profile" className="rounded-full border border-[#6c47ff] px-4 py-2 text-sm font-medium text-[#6c47ff] transition hover:bg-[#f2edff]">
+                  Profile
                 </Link>
                 <UserButton />
               </SignedIn>

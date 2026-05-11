@@ -30,6 +30,7 @@ export async function GET(req) {
         olympiad_events (
           id,
           olympiad_id,
+          completed,
           action,
           date_start,
           date_end,
@@ -46,6 +47,7 @@ export async function GET(req) {
       .map((row) => addDeadlineUrgency({
         id: row.olympiad_events.id,
         olympiad_id: row.olympiad_events.olympiad_id,
+        completed: Boolean(row.olympiad_events.completed),
         name: row.olympiad_events.olympiads.name,
         action: row.olympiad_events.action,
         start: row.olympiad_events.date_start,

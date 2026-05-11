@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 
 type OlympiadOption = {
   id: number;
   name: string;
   url?: string | null;
+  completed?: boolean;
 };
 
 export default function MyOlympiadsPage() {
@@ -50,6 +51,17 @@ export default function MyOlympiadsPage() {
       setIsLoading(false);
     }
   }, [isLoaded, isSignedIn]);
+
+  const completedSet = useMemo(() => new Set(olympiads.filter((o) => o.completed).map((o) => o.id)), [olympiads]);
+
+  async function toggleCompletedOlympiad(id: number) {
+    const nextCompleted = !completedSet.has(id);
+    const response = await fetch(`/api/my_olympiads/${id}`, { method: "PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ completed: nextCompleted }) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "Failed to update completion status.");
+    setStatus(nextCompleted ? "Olympiad marked as completed." : "Olympiad marked as active.");
+    await loadOlympiadData();
+  }
 
   function openEdit(olympiad: OlympiadOption) {
     setError(null);
@@ -147,6 +159,11 @@ export default function MyOlympiadsPage() {
 
   return (
     <main className="mx-auto max-w-5xl p-6">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900">
+          ← Back to my calendar
+        </Link>
+      </div>
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-3xl font-bold">My Olympiads</h1>
 
@@ -169,6 +186,7 @@ export default function MyOlympiadsPage() {
             >
               <div>
                 <h2 className="text-lg font-semibold">{olympiad.name}</h2>
+                {completedSet.has(olympiad.id) && <p className="text-sm text-emerald-700">Completed</p>}
 
                 {olympiad.url && (
                   <a href={olympiad.url} target="_blank" rel="noreferrer" className="text-sm text-blue-600">
@@ -181,6 +199,10 @@ export default function MyOlympiadsPage() {
                 <Link href={`/my_olympiads/${olympiad.id}`} className="rounded-md border px-3 py-1 hover:px-3.5 hover:py-1.5 hover:bg-slate-100 duration-300 text-sm">
                   View
                 </Link>
+
+                <button onClick={() => toggleCompletedOlympiad(olympiad.id).catch((e)=>setError(e.message))} className="rounded-md bg-emerald-700 px-3 py-1 text-sm text-white hover:bg-emerald-600 hover:px-3.5 hover:py-1.5 duration-300 hover:cursor-pointer">
+                  {completedSet.has(olympiad.id) ? "Mark active" : "Mark completed"}
+                </button>
 
                 <button onClick={() => openEdit(olympiad)} className="rounded-md bg-slate-900 px-3 py-1 text-sm text-white hover:bg-slate-700 hover:px-3.5 hover:py-1.5 duration-300 hover:cursor-pointer">
                   Edit

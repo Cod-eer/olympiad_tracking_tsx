@@ -27,7 +27,7 @@ export async function GET(req) {
   const EventsIds = access.map(row => row.event_id);
   const { data: olympiadEvents, error: olympiadEventsError } = await supabase
     .from('olympiad_events')
-    .select('olympiad_id')
+    .select('olympiad_id, completed')
     .in('id', EventsIds);
   if (olympiadEventsError) {
     throw olympiadEventsError;
@@ -41,10 +41,18 @@ export async function GET(req) {
     throw olympiadsError;
   }
 
+  const completionMap = new Map();
+  olympiadEvents.forEach((event) => {
+    const key = event.olympiad_id;
+    const current = completionMap.get(key);
+    completionMap.set(key, current === undefined ? Boolean(event.completed) : current && Boolean(event.completed));
+  });
+
   const data = olympiads.map(row => ({
     id: row.id,
     name: row.name,
     url: row.url,
+    completed: completionMap.get(row.id) ?? false,
   }));
 
   return NextResponse.json({ olympiads : data });

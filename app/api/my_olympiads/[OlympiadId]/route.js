@@ -36,7 +36,7 @@ export async function GET(req, { params }) {
 
     const { data: eventsData, error: eventsError } = await supabase
       .from('event_access')
-      .select('role, olympiad_events!inner(id, action, date_start, date_end, olympiad_id)')
+      .select('role, olympiad_events!inner(id, action, date_start, date_end, olympiad_id, completed)')
       .eq('user_id', userId)
       .eq('olympiad_events.olympiad_id', OlympiadId)
       .order('date_start', { ascending: true, foreignTable: 'olympiad_events' });
@@ -50,6 +50,7 @@ export async function GET(req, { params }) {
       action: event.olympiad_events.action,
       start: event.olympiad_events.date_start,
       end: event.olympiad_events.date_end,
+      completed: event.olympiad_events.completed,
       role: event.role
     }));
 
@@ -68,10 +69,25 @@ export async function PUT(req, { params }) {
     const name = payload?.name?.trim();
     const url = payload?.url?.trim() || null;
 
+    if (typeof payload?.completed === 'boolean') {
+      const { data: accessRows, error: accessError } = await supabase
+        .from('event_access')
+        .select('event_id')
+        .eq('user_id', getAuthorizedUserId(req));
+      if (accessError) throw accessError;
+      const eventIds = (accessRows ?? []).map((row) => row.event_id);
+      const { error: completedError } = await supabase
+        .from('olympiad_events')
+        .update({ completed: payload.completed })
+        .eq('olympiad_id', OlympiadId)
+        .in('id', eventIds);
+      if (completedError) throw completedError;
+      return NextResponse.json({ success: true });
+    }
+
     if (!name) {
       return NextResponse.json({ error: 'Olympiad name is required.' }, { status: 400 });
     }
-
     const { error } = await supabase
       .from('olympiads')
       .update({ name, url })

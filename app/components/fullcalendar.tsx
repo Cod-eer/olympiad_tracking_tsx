@@ -15,12 +15,14 @@ interface CalendarEvent {
     urgencyLevel?: string;
     urgencyLabel?: string;
     deadlineStatus?: string;
+    completed?: boolean;
     backgroundColor?: string;
     borderColor?: string;
     textColor?: string;
 }
 
 const urgencyEventClasses: Record<string, string> = {
+    completed: "bg-green-50 text-green-950 ring-1 ring-green-200",
     overdue: "bg-red-100 text-red-950 ring-1 ring-red-300",
     critical: "bg-red-100 text-red-950 ring-1 ring-red-300",
     soon: "bg-yellow-100 text-yellow-950 ring-1 ring-yellow-300",
@@ -59,6 +61,7 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
         id: event.id === undefined ? undefined : String(event.id),
         dateLabel: formatEventDateRange(event.start, event.end),
         urgencyScoreLabel: typeof event.urgency === "number" ? event.urgency.toFixed(2) : null,
+        isCompleted: Boolean(event.completed),
     }));
 
     return (
@@ -76,10 +79,11 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                     const urgencyLevel = String(info.event.extendedProps.urgencyLevel ?? "unknown");
                     const deadlineStatus = String(info.event.extendedProps.deadlineStatus ?? "");
                     const urgencyScore = info.event.extendedProps.urgencyScoreLabel as string | null;
-                    const urgencyClass = urgencyEventClasses[urgencyLevel] ?? urgencyEventClasses.unknown;
+                    const isCompletedOlympiad = Boolean(info.event.extendedProps.isCompleted);
+                    const urgencyClass = (isCompletedOlympiad ? urgencyEventClasses.completed : (urgencyEventClasses[urgencyLevel] ?? urgencyEventClasses.unknown));
 
                     return (
-                        <div className={`rounded-sm px-1 py-0.5 leading-tight ${urgencyClass}`}>
+                        <div className={`rounded-sm px-1 py-0.5 leading-tight ${urgencyClass} ${isCompletedOlympiad ? "opacity-60" : ""}`}>
                             <div className="whitespace-normal break-words text-[10px] font-semibold uppercase opacity-75">
                                 {String(info.event.extendedProps.dateLabel ?? "")}
                                 {deadlineStatus && ` - ${deadlineStatus}`}
@@ -92,7 +96,8 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                 }}
                 eventClick={(info) => {
                     const deadlineStatus = String(info.event.extendedProps.deadlineStatus ?? "");
-                    alert(deadlineStatus ? `${info.event.title}\n${deadlineStatus}` : info.event.title);
+                    const completedLabel = Boolean(info.event.extendedProps.isCompletedOlympiad) ? " (Completed)" : "";
+                    alert(deadlineStatus ? `${info.event.title}${completedLabel}\n${deadlineStatus}` : `${info.event.title}${completedLabel}`);
                 }}
             />
         </div>
