@@ -305,6 +305,7 @@ export async function GET(req) {
     const sendReminder = mode === 'all' || mode === 'reminder';
 
     const users = await getAllTrackedUserIds();
+    console.log(`Running deadline briefing cron for ${users.length} users (mode: ${mode})`);
     const summary = { users: users.length, mode, weeklySent: 0, reminderSent: 0, errors: 0 };
 
     for (const userId of users) {

@@ -1,8 +1,8 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { EventContentArg } from "@fullcalendar/core";
-import React from "react";
+import { DateClickArg, EventContentArg } from "@fullcalendar/core";
+import React, { useMemo, useState } from "react";
 
 interface CalendarEvent {
     id?: number | string;
@@ -22,7 +22,7 @@ interface CalendarEvent {
 }
 
 const urgencyEventClasses: Record<string, string> = {
-    completed: "bg-green-50 text-green-950 ring-1 ring-green-200",
+    completed: "bg-slate-300 text-slate-700 ring-1 ring-slate-200 line-through",
     overdue: "bg-red-100 text-red-950 ring-1 ring-red-300",
     critical: "bg-red-100 text-red-950 ring-1 ring-red-300",
     soon: "bg-yellow-100 text-yellow-950 ring-1 ring-yellow-300",
@@ -56,13 +56,20 @@ function formatEventDateRange(start: string, end?: string) {
 
 export default function Calendar({ events }: { events: CalendarEvent[] }) {
     const safeEvents = Array.isArray(events) ? events : [];
-    const calendarEvents = safeEvents.map((event) => ({
-        ...event,
-        id: event.id === undefined ? undefined : String(event.id),
-        dateLabel: formatEventDateRange(event.start, event.end),
-        urgencyScoreLabel: typeof event.urgency === "number" ? event.urgency.toFixed(2) : null,
-        isCompleted: Boolean(event.completed),
-    }));
+    const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
+    const [completedEventIds, setCompletedEventIds] = useState<Record<string, boolean>>({});
+
+    const calendarEvents = useMemo(() => [...safeEvents, ...customEvents].map((event) => {
+        const id = event.id === undefined ? `generated-${event.start}-${event.title}` : String(event.id);
+        const isCompleted = completedEventIds[id] ?? Boolean(event.completed);
+        return {
+            ...event,
+            id,
+            dateLabel: formatEventDateRange(event.start, event.end),
+            urgencyScoreLabel: typeof event.urgency === "number" ? event.urgency.toFixed(2) : null,
+            isCompleted,
+        };
+    }), [safeEvents, customEvents, completedEventIds]);
 
     return (
         <div className="w-full max-w-4xl mx-auto">
@@ -70,6 +77,25 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 events={calendarEvents}
+                selectable
+                dateClick={(info: DateClickArg) => {
+                    const title = window.prompt(`Add study item for ${info.dateStr}`, "");
+                    if (!title || !title.trim()) {
+                        return;
+                    }
+                    const trimmedTitle = title.trim();
+                    setCustomEvents((prev) => ([
+                        ...prev,
+                        {
+                            id: `custom-${Date.now()}`,
+                            title: trimmedTitle,
+                            start: info.dateStr,
+                            end: info.dateStr,
+                            urgencyLevel: "normal",
+                            deadlineStatus: "Custom task",
+                        },
+                    ]));
+                }}
                 headerToolbar={{
                     left: "prev,next today",
                     center: "title",
@@ -78,15 +104,40 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                 eventContent={(info: EventContentArg) => {
                     const urgencyLevel = String(info.event.extendedProps.urgencyLevel ?? "unknown");
                     const deadlineStatus = String(info.event.extendedProps.deadlineStatus ?? "");
-                    const urgencyScore = info.event.extendedProps.urgencyScoreLabel as string | null;
                     const isCompletedOlympiad = Boolean(info.event.extendedProps.isCompleted);
                     const urgencyClass = (isCompletedOlympiad ? urgencyEventClasses.completed : (urgencyEventClasses[urgencyLevel] ?? urgencyEventClasses.unknown));
 
                     return (
                         <div className={`rounded-sm px-1 py-0.5 leading-tight ${urgencyClass} ${isCompletedOlympiad ? "opacity-60" : ""}`}>
-                            <div className="whitespace-normal break-words text-[10px] font-semibold uppercase opacity-75">
-                                {String(info.event.extendedProps.dateLabel ?? "")}
-                                {deadlineStatus && ` - ${deadlineStatus}`}
+                            <div className="mb-0.5 flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    role="checkbox"
+                                    aria-checked={isCompletedOlympiad}
+                                    data-state={isCompletedOlympiad ? "checked" : "closed"}
+                                    value="on"
+                                    className="peer rounded-lg border-2 ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground h-5 w-5 shrink-0 border-foreground/20 bg-transparent"
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        event.stopPropagation();
+                                        setCompletedEventIds((prev) => ({
+                                            ...prev,
+                                            [info.event.id]: !isCompletedOlympiad,
+                                        }));
+                                    }}
+                                >
+                                    {isCompletedOlympiad && (
+                                        <span data-state="checked" className="flex items-center justify-center text-current">
+                                            <svg className="size-3.5" aria-hidden="true" width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path fillRule="evenodd" clipRule="evenodd" d="M19.3209 4.24472C20.0142 4.69807 20.2088 5.62768 19.7555 6.32105L11.2555 19.321C10.9972 19.7161 10.5681 19.9665 10.0971 19.997C9.62613 20.0276 9.16825 19.8347 8.86111 19.4764L4.36111 14.2264C3.82198 13.5974 3.89482 12.6504 4.52381 12.1113C5.1528 11.5722 6.09975 11.645 6.63888 12.274L9.83825 16.0066L17.2445 4.6793C17.6979 3.98593 18.6275 3.79136 19.3209 4.24472Z" fill="currentColor"></path>
+                                            </svg>
+                                        </span>
+                                    )}
+                                </button>
+                                <div className="whitespace-normal break-words text-[10px] font-semibold uppercase opacity-75">
+                                    {String(info.event.extendedProps.dateLabel ?? "")}
+                                    {deadlineStatus && ` - ${deadlineStatus}`}
+                                </div>
                             </div>
                             <div className="whitespace-normal break-words text-xs font-semibold">
                                 {info.event.title}
@@ -95,9 +146,20 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                     );
                 }}
                 eventClick={(info) => {
-                    const deadlineStatus = String(info.event.extendedProps.deadlineStatus ?? "");
-                    const completedLabel = Boolean(info.event.extendedProps.isCompletedOlympiad) ? " (Completed)" : "";
-                    alert(deadlineStatus ? `${info.event.title}${completedLabel}\n${deadlineStatus}` : `${info.event.title}${completedLabel}`);
+                    const eventId = info.event.id;
+                    const isCompleted = Boolean(info.event.extendedProps.isCompleted);
+                    const shouldComplete = window.confirm(
+                        isCompleted
+                            ? `Mark "${info.event.title}" as active?`
+                            : `Mark "${info.event.title}" as completed?`
+                    );
+                    if (!shouldComplete) {
+                        return;
+                    }
+                    setCompletedEventIds((prev) => ({
+                        ...prev,
+                        [eventId]: !isCompleted,
+                    }));
                 }}
             />
         </div>
