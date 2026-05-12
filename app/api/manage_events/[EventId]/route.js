@@ -14,28 +14,9 @@ function normalizeDate(value) {
   return new Date(`${value}T00:00:00.000Z`).toISOString();
 }
 
-async function ensureAdminAccess(req, eventId) {
+function getAuthorizedUserId(req) {
   const { userId } = getAuth(req);
-  if (!userId) {
-    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) };
-  }
-
-  const { data: access, error } = await supabase
-    .from('event_access')
-    .select('role')
-    .eq('user_id', userId)
-    .eq('event_id', eventId)
-    .limit(1);
-
-  if (error) {
-    throw error;
-  }
-
-  if (access.length === 0 || access[0].role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
-  }
-
-  return { userId };
+  return userId ?? null;
 }
 
 async function ensureOlympiad({ olympiadId, olympiadName, olympiadUrl }) {
@@ -66,19 +47,34 @@ async function ensureOlympiad({ olympiadId, olympiadName, olympiadUrl }) {
 
 export async function PUT(req, { params }) {
   try {
-    const eventId = Number(params.EventId);
+    //console.log(params);
+    const data = await params;
+    const eventId = Number(data.EventId);
+    console.log('Parsed eventId:', eventId);
     if (!Number.isInteger(eventId)) {
       return NextResponse.json({ error: 'Invalid event id.' }, { status: 400 });
-    }
-    const access = await ensureAdminAccess(req, eventId);
-    if (access.error) {
-      return access.error;
     }
 
     const payload = await req.json();
     const description = payload.description?.trim();
     const dateStart = normalizeDate(payload.startDate);
     const dateEnd = normalizeDate(payload.endDate);
+
+    if (typeof payload?.completed === 'boolean') {
+      const { data: accessRows, error: accessError } = await supabase
+        .from('event_access')
+        .select('event_id')
+        .eq('user_id', getAuthorizedUserId(req));
+      if (accessError) throw accessError;
+      const eventIds = (accessRows ?? []).map((row) => row.event_id);
+      const { error: completedError } = await supabase
+        .from('olympiad_events')
+        .update({ completed: payload.completed })
+        .eq('id', eventId)
+        .in('id', eventIds);
+      if (completedError) throw completedError;
+      return NextResponse.json({ success: true });
+    }
 
     if (!description || !dateStart || !dateEnd) {
       return NextResponse.json(
@@ -127,12 +123,6 @@ export async function DELETE(req, { params }) {
     if (!Number.isInteger(eventId)) {
       return NextResponse.json({ error: 'Invalid event id.' }, { status: 400 });
     }
-    //console.log(eventId);
-    const access = await ensureAdminAccess(req, eventId);
-    if (access.error) {
-      return access.error;
-    }
-
     const { error: accessDeleteError } = await supabase
       .from('event_access')
       .delete()

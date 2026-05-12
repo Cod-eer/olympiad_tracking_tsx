@@ -36,6 +36,18 @@ const calendarDateFormatter = new Intl.DateTimeFormat("en-US", {
     day: "numeric",
 });
 
+function setEventCompleted(eventId : Number, completed : Boolean) {
+    const result = fetch(`/api/manage_events/${eventId}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ completed: completed }),
+    })
+
+    return result
+}
+
 function formatEventDateRange(start: string, end?: string) {
     const startDate = new Date(start);
     if (Number.isNaN(startDate.getTime())) {
@@ -119,8 +131,9 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                                     value="on"
                                     className="peer rounded-lg border-2 ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground h-5 w-5 shrink-0 border-foreground/20 bg-transparent"
                                     onClick={(event) => {
-                                        event.preventDefault();
                                         event.stopPropagation();
+                                        event.preventDefault();
+                                        setEventCompleted(Number(info.event.id), !isCompletedOlympiad);
                                         setCompletedEventIds((prev) => ({
                                             ...prev,
                                             [info.event.id]: !isCompletedOlympiad,
