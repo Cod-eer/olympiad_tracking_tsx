@@ -337,14 +337,14 @@ export async function GET(req) {
         if (sendReminder && reminderEvents.length > 0) {
           const reminder = buildReminder(reminderEvents, reminderDays);
           await sendResendEmail({ to: email, ...reminder });
-          for (const event of weeklyEvents) {
+          for (const event of reminderEvents) {
             await supabase.from('email_logs').insert({
               user_id: userId,
               event_id: event.id,
-              reminder_day: 37,
+              reminder_day: reminderDays.includes(Math.ceil(event.daysToDeadline)) ? Math.ceil(event.daysToDeadline) : null,
               type: 'deadline_reminder',
               sent_at: new Date().toISOString(),
-              text: briefing.text
+              text: reminder.text
             });
           }
           summary.reminderSent += 1;
