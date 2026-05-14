@@ -70,12 +70,13 @@ export default function Landing() {
     }
 
     const [events, setEvents] = useState<Event[]>([]);
+    const [refreshToken, setRefreshToken] = useState(0);
     useEffect(() => {
         fetch("/api/show_events")
             .then((res) => res.json())
             .then((data) => setEvents(data))
             .catch((err) => console.error(err));
-    }, []);
+    }, [refreshToken]);
 
     const [limit, setLimit] = useState(5);
     const calendarRef = useRef<HTMLDivElement>(null);
@@ -156,9 +157,9 @@ export default function Landing() {
                 </div>
                 <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
                     <div ref={calendarRef}>
-                        {!loading && <Calendar events={events} />}
+                        {!loading && <Calendar events={events} onEventsChanged={() => setRefreshToken((prev) => prev + 1)} />}
                     </div>
-                    {!loading && <UpcomingEvents limit={limit} />}
+                    {!loading && <UpcomingEvents limit={limit} refreshToken={refreshToken} />}
                 </div>
             </section>
 

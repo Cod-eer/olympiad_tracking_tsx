@@ -65,7 +65,7 @@ function formatDate(value?: string | null) {
     return date.toLocaleDateString();
 }
 
-export default function UpcomingEvents({ limit }: { limit: number }) {
+export default function UpcomingEvents({ limit, refreshToken = 0 }: { limit: number; refreshToken?: number }) {
     const [upcoming_events, setEvents] = useState<Event[]>([]);
     const [isSendingBriefing, setIsSendingBriefing] = useState(false);
     const [briefingStatus, setBriefingStatus] = useState<string | null>(null);
@@ -89,7 +89,7 @@ export default function UpcomingEvents({ limit }: { limit: number }) {
                 console.error("Error fetching upcoming events:", err);
                 setEvents([]); // fallback to empty array to prevent .map errors
             });
-    }, [limit]);
+    }, [limit, refreshToken]);
 
     async function sendBriefing() {
         setIsSendingBriefing(true);
