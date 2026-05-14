@@ -51,12 +51,13 @@ export default function Dashboard() {
     }
 
     const [events, setEvents] = useState<Event[]>([]);
+    const [refreshToken, setRefreshToken] = useState(0);
     useEffect(() => {
         fetch("/api/show_events")
             .then((res) => res.json())
             .then((data) => setEvents(data))
             .catch((err) => console.error(err));
-    }, []);
+    }, [refreshToken]);
 
     const { isSignedIn, isLoaded } = useUser();
 
@@ -96,9 +97,9 @@ export default function Dashboard() {
             </div>
             {/* Calendar Component */}
             <div className="flex flex-row items-top mt-30 gap-10">
-                {!loading && <Calendar events={events} />}
+                {!loading && <Calendar events={events} onEventsChanged={() => setRefreshToken((prev) => prev + 1)} />}
                 {/* Upcoming Events Component */}
-                {!loading && <UpcomingEvents limit={5} />}
+                {!loading && <UpcomingEvents limit={5} refreshToken={refreshToken} />}
             </div>
             {/* Loading Overlay */}
             {loading && <LoadingOverlay />}

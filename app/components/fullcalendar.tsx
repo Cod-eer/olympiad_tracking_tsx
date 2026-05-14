@@ -3,7 +3,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventContentArg } from "@fullcalendar/core";
 import { DateClickArg } from "@fullcalendar/interaction";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 interface CalendarEvent {
     id?: number | string;
@@ -22,6 +22,11 @@ interface CalendarEvent {
     textColor?: string;
 }
 
+interface OlympiadOption {
+    id: number;
+    name: string;
+}
+
 const urgencyEventClasses: Record<string, string> = {
     completed: "bg-slate-300 text-slate-700 ring-1 ring-slate-200 line-through",
     overdue: "bg-red-100 text-red-950 ring-1 ring-red-300",
@@ -36,16 +41,14 @@ const calendarDateFormatter = new Intl.DateTimeFormat("en-US", {
     day: "numeric",
 });
 
-function setEventCompleted(eventId : Number, completed : Boolean) {
-    const result = fetch(`/api/manage_events/${eventId}`, {
+function setEventCompleted(eventId: number, completed: boolean) {
+    return fetch(`/api/manage_events/${eventId}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify({ completed: completed }),
-    })
-
-    return result
+        body: JSON.stringify({ completed }),
+    });
 }
 
 function formatEventDateRange(start: string, end?: string) {
@@ -67,12 +70,28 @@ function formatEventDateRange(start: string, end?: string) {
     return `${calendarDateFormatter.format(startDate)} - ${calendarDateFormatter.format(endDate)}`;
 }
 
-export default function Calendar({ events }: { events: CalendarEvent[] }) {
+export default function Calendar({ events, onEventsChanged }: { events: CalendarEvent[]; onEventsChanged?: () => void }) {
     const safeEvents = Array.isArray(events) ? events : [];
-    const [customEvents, setCustomEvents] = useState<CalendarEvent[]>([]);
     const [completedEventIds, setCompletedEventIds] = useState<Record<string, boolean>>({});
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [createDate, setCreateDate] = useState("");
+    const [createTitle, setCreateTitle] = useState("");
+    const [createOlympiadId, setCreateOlympiadId] = useState("");
+    const [createEndDate, setCreateEndDate] = useState("");
+    const [olympiads, setOlympiads] = useState<OlympiadOption[]>([]);
 
-    const calendarEvents = useMemo(() => [...safeEvents, ...customEvents].map((event) => {
+    useEffect(() => {
+        fetch("/api/manage_events", { cache: "no-store" })
+            .then((res) => res.json())
+            .then((data) => {
+                if (Array.isArray(data?.olympiads)) {
+                    setOlympiads(data.olympiads);
+                }
+            })
+            .catch(() => setOlympiads([]));
+    }, []);
+
+    const calendarEvents = useMemo(() => safeEvents.map((event) => {
         const id = event.id === undefined ? `generated-${event.start}-${event.title}` : String(event.id);
         const isCompleted = completedEventIds[id] ?? Boolean(event.completed);
         return {
@@ -82,7 +101,30 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
             urgencyScoreLabel: typeof event.urgency === "number" ? event.urgency.toFixed(2) : null,
             isCompleted,
         };
-    }), [safeEvents, customEvents, completedEventIds]);
+    }), [safeEvents, completedEventIds]);
+
+    async function handleCreateEvent() {
+        if (!createTitle.trim() || !createOlympiadId || !createEndDate || !createDate) {
+            return;
+        }
+
+        await fetch("/api/manage_events", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                description: createTitle.trim(),
+                startDate: createDate,
+                endDate: createEndDate,
+                olympiadId: Number(createOlympiadId),
+            }),
+        });
+
+        setIsCreateModalOpen(false);
+        setCreateTitle("");
+        setCreateOlympiadId("");
+        setCreateEndDate("");
+        onEventsChanged?.();
+    }
 
     return (
         <div className="w-full max-w-4xl mx-auto">
@@ -92,22 +134,9 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                 events={calendarEvents}
                 selectable
                 dateClick={(info: DateClickArg) => {
-                    const title = window.prompt(`Add study item for ${info.dateStr}`, "");
-                    if (!title || !title.trim()) {
-                        return;
-                    }
-                    const trimmedTitle = title.trim();
-                    setCustomEvents((prev) => ([
-                        ...prev,
-                        {
-                            id: `custom-${Date.now()}`,
-                            title: trimmedTitle,
-                            start: info.dateStr,
-                            end: info.dateStr,
-                            urgencyLevel: "normal",
-                            deadlineStatus: "Custom task",
-                        },
-                    ]));
+                    setCreateDate(info.dateStr);
+                    setCreateEndDate(info.dateStr);
+                    setIsCreateModalOpen(true);
                 }}
                 headerToolbar={{
                     left: "prev,next today",
@@ -130,14 +159,15 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                                     data-state={isCompletedOlympiad ? "checked" : "closed"}
                                     value="on"
                                     className="peer rounded-lg border-2 ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground h-5 w-5 shrink-0 border-foreground/20 bg-transparent"
-                                    onClick={(event) => {
+                                    onClick={async (event) => {
                                         event.stopPropagation();
                                         event.preventDefault();
-                                        setEventCompleted(Number(info.event.id), !isCompletedOlympiad);
+                                        await setEventCompleted(Number(info.event.id), !isCompletedOlympiad);
                                         setCompletedEventIds((prev) => ({
                                             ...prev,
                                             [info.event.id]: !isCompletedOlympiad,
                                         }));
+                                        onEventsChanged?.();
                                     }}
                                 >
                                     {isCompletedOlympiad && (
@@ -159,23 +189,27 @@ export default function Calendar({ events }: { events: CalendarEvent[] }) {
                         </div>
                     );
                 }}
-                eventClick={(info) => {
-                    const eventId = info.event.id;
-                    const isCompleted = Boolean(info.event.extendedProps.isCompleted);
-                    const shouldComplete = window.confirm(
-                        isCompleted
-                            ? `Mark "${info.event.title}" as active?`
-                            : `Mark "${info.event.title}" as completed?`
-                    );
-                    if (!shouldComplete) {
-                        return;
-                    }
-                    setCompletedEventIds((prev) => ({
-                        ...prev,
-                        [eventId]: !isCompleted,
-                    }));
-                }}
             />
+
+            {isCreateModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                    <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
+                        <h3 className="text-lg font-semibold text-slate-900">Create event for {createDate}</h3>
+                        <div className="mt-4 space-y-3">
+                            <input className="w-full rounded border border-slate-300 p-2" placeholder="Event name" value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} />
+                            <select className="w-full rounded border border-slate-300 p-2" value={createOlympiadId} onChange={(e) => setCreateOlympiadId(e.target.value)}>
+                                <option value="">Select olympiad</option>
+                                {olympiads.map((olympiad) => <option key={olympiad.id} value={olympiad.id}>{olympiad.name}</option>)}
+                            </select>
+                            <input className="w-full rounded border border-slate-300 p-2" type="date" value={createEndDate} min={createDate} onChange={(e) => setCreateEndDate(e.target.value)} />
+                        </div>
+                        <div className="mt-5 flex justify-end gap-2">
+                            <button type="button" className="rounded border border-slate-300 px-3 py-2" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
+                            <button type="button" className="rounded bg-slate-900 px-3 py-2 text-white disabled:opacity-50" disabled={!createTitle.trim() || !createOlympiadId || !createEndDate} onClick={handleCreateEvent}>Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
