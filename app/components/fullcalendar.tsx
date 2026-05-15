@@ -192,23 +192,23 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
             />
 
             {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                <form className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
                     <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
                         <h3 className="text-lg font-semibold text-slate-900">Create event for {createDate}</h3>
                         <div className="mt-4 space-y-3">
-                            <input className="w-full rounded border border-slate-300 p-2" placeholder="Event name" value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} />
-                            <select className="w-full rounded border border-slate-300 p-2" value={createOlympiadId} onChange={(e) => setCreateOlympiadId(e.target.value)}>
+                            <select className="w-full rounded-lg border border-slate-300 p-2" value={createOlympiadId} onChange={(e) => setCreateOlympiadId(e.target.value)}>
                                 <option value="">Select olympiad</option>
                                 {olympiads.map((olympiad) => <option key={olympiad.id} value={olympiad.id}>{olympiad.name}</option>)}
                             </select>
-                            <input className="w-full rounded border border-slate-300 p-2" type="date" value={createEndDate} min={createDate} onChange={(e) => setCreateEndDate(e.target.value)} />
+                            <input className="w-full rounded-lg border border-slate-300 p-2" placeholder="Event name" value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} />
+                            <input className="w-full rounded-lg border border-slate-300 p-2" type="date" value={createEndDate} min={createDate} onChange={(e) => setCreateEndDate(e.target.value)} />
                         </div>
                         <div className="mt-5 flex justify-end gap-2">
-                            <button type="button" className="rounded border border-slate-300 px-3 py-2" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
-                            <button type="button" className="rounded bg-slate-900 px-3 py-2 text-white disabled:opacity-50" disabled={!createTitle.trim() || !createOlympiadId || !createEndDate} onClick={handleCreateEvent}>Save</button>
+                            <button type="button" className="rounded-lg border bg-slate-200 px-3 py-2 text-sm text-black hover:bg-slate-100 hover:px-3.5 hover:py-1.5 duration-300 hover:cursor-pointer" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
+                            <button type="button" className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-700 hover:px-3.5 hover:py-1.5 duration-300 hover:cursor-pointer" disabled={!createTitle.trim() || !createOlympiadId || !createEndDate} onClick={handleCreateEvent}>Save</button>
                         </div>
                     </div>
-                </div>
+                </form>
             )}
         </div>
     );

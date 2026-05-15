@@ -293,12 +293,6 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
-    const { userId } = getAuth(req);
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const reminderDays = [3, 7];
     const mode = new URL(req.url).searchParams.get('mode') ?? 'all';
     const sendWeekly = mode === 'all' || mode === 'weekly';
