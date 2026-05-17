@@ -256,11 +256,13 @@ export async function POST(req) {
     }
 
     const briefing = buildBriefing(events, lookaheadDays);
+    let message;
+    message.subject = briefing.title;
+    message.text = briefing.text;
+    message.html = briefing.html;
     const result = await sendResendEmail({
       to: email,
-      subject: briefing.title,
-      text: briefing.text,
-      html: briefing.html,
+      ...message
     });
 
     for (const event of events) {
@@ -314,7 +316,11 @@ export async function GET(req) {
 
         if (sendWeekly && weeklyEvents.length > 0) {
           const briefing = buildBriefing(weeklyEvents, 7);
-          await sendResendEmail({ to: email, ...briefing });
+          let message;
+          message.subject = briefing.title;
+          message.text = briefing.text;
+          message.html = briefing.html;
+          await sendResendEmail({ to: email, ...message });
           for (const event of weeklyEvents) {
             await supabase.from('email_logs').insert({
               user_id: userId,
@@ -330,7 +336,11 @@ export async function GET(req) {
 
         if (sendReminder && reminderEvents.length > 0) {
           const reminder = buildReminder(reminderEvents, reminderDays);
-          await sendResendEmail({ to: email, ...reminder });
+          let message;
+          message.subject = reminder.title;
+          message.text = reminder.text;
+          message.html = reminder.html;
+          await sendResendEmail({ to: email, ...message });
           for (const event of reminderEvents) {
             await supabase.from('email_logs').insert({
               user_id: userId,
