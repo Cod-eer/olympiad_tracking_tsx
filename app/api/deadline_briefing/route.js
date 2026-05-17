@@ -181,7 +181,7 @@ function buildBriefing(events, lookaheadDays) {
   `;
 
   return {
-    title,
+    subject: title,
     text: textLines.join('\n'),
     html,
   };
@@ -256,13 +256,9 @@ export async function POST(req) {
     }
 
     const briefing = buildBriefing(events, lookaheadDays);
-    let message;
-    message.subject = briefing.title;
-    message.text = briefing.text;
-    message.html = briefing.html;
     const result = await sendResendEmail({
       to: email,
-      ...message
+      ...briefing
     });
 
     for (const event of events) {
@@ -316,11 +312,7 @@ export async function GET(req) {
 
         if (sendWeekly && weeklyEvents.length > 0) {
           const briefing = buildBriefing(weeklyEvents, 7);
-          let message;
-          message.subject = briefing.title;
-          message.text = briefing.text;
-          message.html = briefing.html;
-          await sendResendEmail({ to: email, ...message });
+          await sendResendEmail({ to: email, ...briefing });
           for (const event of weeklyEvents) {
             await supabase.from('email_logs').insert({
               user_id: userId,
