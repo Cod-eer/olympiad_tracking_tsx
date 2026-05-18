@@ -119,7 +119,8 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     //console.log(params);
-    const eventId = Number(params.EventId);
+    const data = await params;
+    const eventId = Number(data.EventId);
     if (!Number.isInteger(eventId)) {
       return NextResponse.json({ error: 'Invalid event id.' }, { status: 400 });
     }
