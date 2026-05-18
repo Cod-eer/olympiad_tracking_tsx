@@ -127,7 +127,7 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
     }
 
     return (
-        <div className="w-full max-w-4xl mx-auto">
+        <div className="w-full max-w-6xl mx-auto">
             <FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
@@ -184,6 +184,7 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                                 </div>
                             </div>
                             <div className="whitespace-normal break-words text-xs font-semibold">
+                                <p className="text-[8px] opacity-75"> {info.event.extendedProps.olympiadTitle}</p>
                                 {info.event.title}
                             </div>
                         </div>

@@ -14,6 +14,7 @@ interface Event {
   id?: number;
   olympiadId?: number;
   title: string;
+  olympiadTitle: string;
   start: string;
   end?: string;
 }

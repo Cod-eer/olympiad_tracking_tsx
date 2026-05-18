@@ -46,7 +46,8 @@ export async function GET(req) {
         id: event.id,
         olympiad_id: event.olympiad_id,
         completed: Boolean(event.completed),
-        title: `${event.olympiads?.name ?? 'Olympiad'} - ${event.action}`,
+        title: `${event.action}`,
+        olympiadTitle: event.olympiads?.name ?? 'Olympiad',
         start: event.date_start,
         end: event.date_end,
       }));
