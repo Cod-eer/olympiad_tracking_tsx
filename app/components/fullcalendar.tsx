@@ -1,7 +1,7 @@
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { EventContentArg } from "@fullcalendar/core";
+import { EventContentArg, EventClickArg, EventDropArg } from "@fullcalendar/core";
 import { DateClickArg } from "@fullcalendar/interaction";
 import React, { useEffect, useMemo, useState } from "react";
 
@@ -70,6 +70,19 @@ function formatEventDateRange(start: string, end?: string) {
     return `${calendarDateFormatter.format(startDate)} - ${calendarDateFormatter.format(endDate)}`;
 }
 
+function shiftDateString(dateString: string, days: number) {
+    const date = new Date(`${dateString}T00:00:00`);
+    date.setDate(date.getDate() + days);
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function toInputDate(value?: string) {
+    if (!value) {
+        return "";
+    }
+    return value.slice(0, 10);
+}
+
 export default function Calendar({ events, onEventsChanged }: { events: CalendarEvent[]; onEventsChanged?: () => void }) {
     const safeEvents = Array.isArray(events) ? events : [];
     const [completedEventIds, setCompletedEventIds] = useState<Record<string, boolean>>({});
@@ -79,7 +92,11 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
     const [createOlympiadId, setCreateOlympiadId] = useState("");
     const [createEndDate, setCreateEndDate] = useState("");
     const [olympiads, setOlympiads] = useState<OlympiadOption[]>([]);
-
+    const [editingEventId, setEditingEventId] = useState<string | null>(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [editStartDate, setEditStartDate] = useState("");
+    const [editEndDate, setEditEndDate] = useState("");
+    const [editOlympiadId, setEditOlympiadId] = useState("");
     useEffect(() => {
         fetch("/api/manage_events", { cache: "no-store" })
             .then((res) => res.json())
@@ -126,6 +143,41 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
         onEventsChanged?.();
     }
 
+    function getInclusiveEndDate(endStr: string | null, startStr: string) {
+        const normalizedStart = toInputDate(startStr);
+        if (!endStr) {
+            return normalizedStart;
+        }
+        const normalizedEnd = toInputDate(endStr);
+        return shiftDateString(normalizedEnd, 0);
+    }
+
+    async function handleDeleteEvent(eventId: string) {
+        await fetch(`/api/manage_events/${eventId}`, { method: "DELETE" });
+        setEditingEventId(null);
+        onEventsChanged?.();
+    }
+
+    async function handleUpdateEvent() {
+        if (!editingEventId || !editTitle.trim() || !editStartDate || !editEndDate || !editOlympiadId) {
+            return;
+        }
+
+        await fetch(`/api/manage_events/${editingEventId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                description: editTitle.trim(),
+                startDate: editStartDate,
+                endDate: editEndDate,
+                olympiadId: Number(editOlympiadId),
+            }),
+        });
+
+        setEditingEventId(null);
+        onEventsChanged?.();
+    }
+
     return (
         <div className="w-full max-w-6xl mx-auto">
             <FullCalendar
@@ -133,10 +185,39 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                 initialView="dayGridMonth"
                 events={calendarEvents}
                 selectable
+                editable
                 dateClick={(info: DateClickArg) => {
                     setCreateDate(info.dateStr);
                     setCreateEndDate(info.dateStr);
                     setIsCreateModalOpen(true);
+                }}
+                eventClick={(info : EventClickArg) => {
+                    const event = info.event;
+                    setEditingEventId(event.id);
+                    setEditTitle(event.title);
+                    setEditStartDate(toInputDate(event.startStr));
+                    setEditEndDate(toInputDate(event.endStr || event.startStr));
+                    setEditOlympiadId(String(event.extendedProps.olympiad_id ?? ""));
+                }}
+                eventDrop={async (info : EventDropArg) => {
+                    const startDate = toInputDate(info.event.startStr);
+                    const endDate = toInputDate(info.event.endStr || info.event.startStr);
+                    const olympiadId = Number(info.event.extendedProps.olympiad_id);
+                    const response = await fetch(`/api/manage_events/${info.event.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            description: info.event.title,
+                            startDate,
+                            endDate,
+                            olympiadId,
+                        }),
+                    });
+                    if (!response.ok) {
+                        info.revert();
+                        return;
+                    }
+                    onEventsChanged?.();
                 }}
                 headerToolbar={{
                     left: "prev,next today",
@@ -207,6 +288,29 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                         <div className="mt-5 flex justify-end gap-2">
                             <button type="button" className="rounded-lg border bg-slate-200 px-3 py-2 text-sm text-black hover:bg-slate-100 hover:px-3.5 hover:py-1.5 duration-300 hover:cursor-pointer" onClick={() => setIsCreateModalOpen(false)}>Cancel</button>
                             <button type="button" className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-700 hover:px-3.5 hover:py-1.5 duration-300 hover:cursor-pointer" disabled={!createTitle.trim() || !createOlympiadId || !createEndDate} onClick={handleCreateEvent}>Save</button>
+                        </div>
+                    </div>
+                </form>
+            )}
+            {editingEventId && (
+                <form className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+                    <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
+                        <h3 className="text-lg font-semibold text-slate-900">Edit event</h3>
+                        <div className="mt-4 space-y-3">
+                            <select className="w-full rounded-lg border border-slate-300 p-2" value={editOlympiadId} onChange={(e) => setEditOlympiadId(e.target.value)}>
+                                <option value="">Select olympiad</option>
+                                {olympiads.map((olympiad) => <option key={olympiad.id} value={olympiad.id}>{olympiad.name}</option>)}
+                            </select>
+                            <input className="w-full rounded-lg border border-slate-300 p-2" placeholder="Event name" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                            <input className="w-full rounded-lg border border-slate-300 p-2" type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
+                            <input className="w-full rounded-lg border border-slate-300 p-2" type="date" value={editEndDate} min={editStartDate} onChange={(e) => setEditEndDate(e.target.value)} />
+                        </div>
+                        <div className="mt-5 flex justify-between gap-2">
+                            <button type="button" className="rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-500 hover:px-3.5 hover:py-1.5 duration-300" onClick={() => handleDeleteEvent(editingEventId)}>Delete</button>
+                            <div className="flex gap-2">
+                                <button type="button" className="rounded-lg border bg-slate-200 px-3 py-2 text-sm text-black hover:bg-slate-100 hover:px-3.5 hover:py-1.5 duration-300" onClick={() => setEditingEventId(null)}>Cancel</button>
+                                <button type="button" className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white hover:bg-slate-700 hover:px-3.5 hover:py-1.5 duration-300" disabled={!editTitle.trim() || !editOlympiadId || !editStartDate || !editEndDate} onClick={handleUpdateEvent}>Save</button>
+                            </div>
                         </div>
                     </div>
                 </form>
