@@ -81,20 +81,31 @@ export default function Dashboard() {
     return (
         <main className="p-6">
             <div className="text-center mt-10 flex justify-center items-baseline gap-3">
-                <form id="urlForm" className="mt-4 flex gap-3" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        id="url_bar"
-                        name="url"
-                        placeholder="Enter Olympiad URL"
-                        className="border p-2 rounded w-full"
-                    />
-                    <button type="submit" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out">
-                        Parse
-                    </button>
-                </form>
-                <button type="button" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/manage")}> Manage Events </button>
-                <button type="button" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/my_olympiads")}> My Olympiads </button>
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 ml-10">
+                    <p className="p-4"> Experience </p>
+                </div>
+                <div className="flex-column items-center gap-3">
+                    <form id="urlForm" className="ml-5 mt-4 w-full flex gap-3" onSubmit={handleSubmit}>
+                        <input
+                            type="text"
+                            id="url_bar"
+                            name="url"
+                            placeholder="Enter Olympiad URL"
+                            className="border p-2 rounded w-full"
+                        />
+                        <button type="submit" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out">
+                            Parse
+                        </button>
+                    </form>
+                    <div className="flex-row justify-start items-center gap-3">
+                        <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/manage")}> Manage Events </button>
+                        <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/my_olympiads")}> My Olympiads </button>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <p className="p-4"> Missed Deadlines: xxx</p>
+                </div>
             </div>
             {/* Calendar Component */}
             <div className="flex flex-row items-top mt-30 gap-10">
