@@ -291,7 +291,7 @@ export async function POST(req) {
 
 export async function GET(req) {
   try {
-    const reminderDays = [3, 7];
+    const reminderDays = [1, 3, 7];
     const mode = new URL(req.url).searchParams.get('mode') ?? 'all';
     const sendWeekly = mode === 'all' || mode === 'weekly';
     const sendReminder = mode === 'all' || mode === 'reminder';
