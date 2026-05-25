@@ -11,6 +11,7 @@ import {
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { Analytics } from "@vercel/analytics/next"
+import ThemeToggle from "./components/theme_toggle";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -23,13 +24,17 @@ const description = "Parse academic competition pages, extract dates & details, 
 export default function RootLayout({ children, }: Readonly<{children: React.ReactNode;}>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" suppressHydrationWarning>
         <head>
           <title>{title}</title>
           <meta name="description" content={description} />
           <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){try{var t=localStorage.getItem("theme");var d=t?t==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d);}catch(e){}})();`,
+            }}
+          />
           <link rel="icon" href="/favicon.ico" />
-
           {/* Open Graph */}
           <meta property="og:type" content="website" />
           <meta property="og:title" content={title} />
@@ -53,6 +58,7 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
               </Link>
             </div>
             <div className="absolute top-0.5 bottom-2 right-4 flex items-center gap-4 mr-4 h-full">
+              <ThemeToggle />
               <SignedOut>
                 <SignInButton>
                   <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">

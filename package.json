@@ -31,6 +31,7 @@
     "playwright": "^1.57.0",
     "playwright-core": "^1.56.1",
     "postgres": "^3.4.7",
+    "radix-ui": "^1.4.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "tailwind-merge": "^3.3.1"

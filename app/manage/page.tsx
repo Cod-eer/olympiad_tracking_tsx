@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Spinner } from "../components/ui/spinner";
 
 type OlympiadOption = {
   id: number;
@@ -218,7 +219,12 @@ export default function ManageEventsPage() {
   }
 
   if (!isLoaded || isLoading) {
-    return <main className="mx-auto max-w-6xl p-6">Loading event manager…</main>;
+    return <main className="mx-auto max-w-6xl p-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
+        <Spinner className="size-7" />
+        <h2 className="text-2xl font-semibold text-slate-900">Loading events...</h2>
+      </div>
+    </main>;
   }
 
   if (!isSignedIn) {
@@ -269,7 +275,7 @@ export default function ManageEventsPage() {
       </section>
 
       <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] width-full display-flex align-start items-start">
-        <form className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex-col align-normal items-start gap-3px" onSubmit={handleSubmit}>
+        <form className="h-full rounded-2xl border border-slate-200 bg-white p-6 shadow-sm flex-col align-normal items-start gap-3px" onSubmit={handleSubmit}>
           <div className="flex items-center justify-between gap-4">
             <div>
               <h3 className="text-xl font-semibold text-slate-900">{isEditing ? "Edit event" : "Create event"}</h3>

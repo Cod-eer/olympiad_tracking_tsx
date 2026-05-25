@@ -2,7 +2,7 @@
 
 import "../globals.css";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Calendar from "../components/fullcalendar";
 import LoadingOverlay  from "../components/loading";
 import UpcomingEvents from "../components/upcoming-events";
@@ -53,6 +53,11 @@ export default function Dashboard() {
 
     const [events, setEvents] = useState<Event[]>([]);
     const [refreshToken, setRefreshToken] = useState(0);
+    const [progress, setProgress] = useState<{
+        experience: number;
+        level: number;
+        missedEvents: number;
+    } | null>(null);
     useEffect(() => {
         fetch("/api/show_events")
             .then((res) => res.json())
@@ -61,6 +66,21 @@ export default function Dashboard() {
     }, [refreshToken]);
 
     const { isSignedIn, isLoaded } = useUser();
+
+    useEffect(() => {
+        if (!isLoaded || !isSignedIn) return;
+        fetch("/api/user_progress", { cache: "no-store" })
+            .then((res) => res.json())
+            .then((data) => setProgress(data))
+            .catch(() => setProgress(null));
+    }, [isLoaded, isSignedIn, refreshToken]);
+
+    const missedMessage = useMemo(() => {
+        if (!progress) return "Progress data not available.";
+        if (progress.missedEvents === 0) return "No missed deadlines. Congratulations!";
+        if (progress.missedEvents === 1) return "You have 1 missed deadline.";
+        return `You have ${progress.missedEvents} missed deadlines.`;
+    }, [progress]);
 
     if (!isSignedIn) {
       return (
@@ -80,11 +100,13 @@ export default function Dashboard() {
 
     return (
         <main className="p-6">
-            <div className="text-center mt-10 flex justify-center items-baseline gap-3">
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4 ml-10">
-                    <p className="p-4"> Experience </p>
+            <div className="text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
+                <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <p className="p-1 text-sm text-slate-500">Experience</p>
+                    <p className="p-1 text-2xl font-semibold">{progress?.experience ?? 0} XP</p>
+                    <p className="p-1 text-sm">Level {progress?.level ?? 1}</p>
                 </div>
-                <div className="flex-column items-center gap-3">
+                <div className="w-1/2 bg-white rounded-2xl shadow-lg border border-slate-200 flex-column items-center gap-3">
                     <form id="urlForm" className="ml-5 mt-4 w-full flex gap-3" onSubmit={handleSubmit}>
                         <input
                             type="text"
@@ -103,13 +125,16 @@ export default function Dashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-4">
-                    <p className="p-4"> Missed Deadlines: xxx</p>
+                <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
+                    <p className="p-1 text-sm text-slate-500">Missed deadlines</p>
+                    <p className="p-1 text-lg font-semibold">{missedMessage}</p>
                 </div>
             </div>
             {/* Calendar Component */}
             <div className="flex flex-row items-top mt-30 gap-10">
-                {!loading && <Calendar events={events} onEventsChanged={() => setRefreshToken((prev) => prev + 1)} />}
+                <div className="w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-4">
+                    {!loading && <Calendar events={events} onEventsChanged={() => setRefreshToken((prev) => prev + 1)} />}
+                </div>
                 {/* Upcoming Events Component */}
                 {!loading && <UpcomingEvents limit={5} refreshToken={refreshToken} />}
             </div>

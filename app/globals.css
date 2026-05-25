@@ -326,3 +326,35 @@ td[colspan="3"] {
     @apply bg-background text-foreground;
   }
 }
+
+.dark .bg-white {
+  background-color: rgb(15 23 42) !important;
+}
+
+.dark .border-slate-200,
+.dark .border-gray-200,
+.dark .border-slate-300 {
+  border-color: rgb(51 65 85) !important;
+}
+
+.dark .bg-slate-50,
+.dark .bg-slate-100 {
+  background-color: rgb(30 41 59) !important;
+}
+
+.dark .text-slate-900,
+.dark .text-slate-950,
+.dark .text-slate-800 {
+  color: rgb(241 245 249) !important;
+}
+
+.dark .text-slate-700,
+.dark .text-slate-600 {
+  color: rgb(203 213 225) !important;
+}
+.dark .text-slate-500 {
+  color: rgb(203 213 225) !important;
+}
+.dark .text-gray-700 {
+  color: rgb(203 213 225) !important;
+}
