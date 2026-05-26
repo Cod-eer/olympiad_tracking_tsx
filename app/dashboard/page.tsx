@@ -1,145 +1,38 @@
 "use client";
 
-import "../globals.css";
+import { CalendarDays, Compass, PanelLeft, Trophy } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
-import Calendar from "../components/fullcalendar";
-import LoadingOverlay  from "../components/loading";
-import UpcomingEvents from "../components/upcoming-events";
-import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import Calendar from "../components/fullcalendar";
+import LoadingOverlay from "../components/loading";
+import UpcomingEvents from "../components/upcoming-events";
 
-
-interface Event {
-  id?: number;
-  olympiadId?: number;
-  title: string;
-  olympiadTitle: string;
-  start: string;
-  end?: string;
-}
+type Event = { id?: number; title: string; start: string; end?: string };
 
 export default function Dashboard() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const { isSignedIn, isLoaded } = useUser();
+  const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [refreshToken, setRefreshToken] = useState(0);
+  const [progress, setProgress] = useState<{ experience: number; level: number; missedEvents: number } | null>(null);
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        console.log("clicked!");
-        e.preventDefault();
-        setLoading(true);
-        const newForm = new FormData(e.currentTarget);
-        const urlValue = newForm.get("url") as string;
-        try {
-            const response = await fetch("/api/call_result", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ url: urlValue }),
-            });
-            const { data } = await response.json();
-            if (data.error) {
-                console.error("Error:", data.error);
-            }
+  useEffect(() => { fetch("/api/show_events").then((res) => res.json()).then(setEvents).catch(() => setEvents([])); }, [refreshToken]);
+  useEffect(() => { if (isLoaded && isSignedIn) fetch("/api/user_progress", { cache: "no-store" }).then((r) => r.json()).then(setProgress).catch(() => setProgress(null)); }, [isLoaded, isSignedIn, refreshToken]);
 
-            sessionStorage.setItem("parsedData", JSON.stringify(data));
-        } catch (error) {
-            console.error("Error:", error);
-        } finally {
-            setLoading(false);
-            router.push(`/result`);
-        }
-    }
+  const missedMessage = useMemo(() => !progress ? "No progress data." : progress.missedEvents === 0 ? "No missed deadlines." : `${progress.missedEvents} missed deadline${progress.missedEvents > 1 ? "s" : ""}.`, [progress]);
 
-    const [events, setEvents] = useState<Event[]>([]);
-    const [refreshToken, setRefreshToken] = useState(0);
-    const [progress, setProgress] = useState<{
-        experience: number;
-        level: number;
-        missedEvents: number;
-    } | null>(null);
-    useEffect(() => {
-        fetch("/api/show_events")
-            .then((res) => res.json())
-            .then((data) => setEvents(data))
-            .catch((err) => console.error(err));
-    }, [refreshToken]);
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault(); setLoading(true);
+    const url = String(new FormData(e.currentTarget).get("url") ?? "");
+    try { const response = await fetch("/api/call_result", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) }); const { data } = await response.json(); sessionStorage.setItem("parsedData", JSON.stringify(data)); router.push("/result"); } finally { setLoading(false); }
+  }
 
-    const { isSignedIn, isLoaded } = useUser();
+  if (!isSignedIn) return <main className="mx-auto max-w-3xl p-6"><div className="surface p-8"><h2 className="text-2xl font-semibold">Sign in to view your dashboard</h2><p className="mt-2 text-muted-foreground">Your events and reminders are account-specific.</p><Link href="/" className="mt-5 inline-flex rounded-xl bg-primary px-4 py-2 text-primary-foreground">Return home</Link></div></main>;
 
-    useEffect(() => {
-        if (!isLoaded || !isSignedIn) return;
-        fetch("/api/user_progress", { cache: "no-store" })
-            .then((res) => res.json())
-            .then((data) => setProgress(data))
-            .catch(() => setProgress(null));
-    }, [isLoaded, isSignedIn, refreshToken]);
-
-    const missedMessage = useMemo(() => {
-        if (!progress) return "Progress data not available.";
-        if (progress.missedEvents === 0) return "No missed deadlines. Congratulations!";
-        if (progress.missedEvents === 1) return "You have 1 missed deadline.";
-        return `You have ${progress.missedEvents} missed deadlines.`;
-    }, [progress]);
-
-    if (!isSignedIn) {
-      return (
-        <main className="mx-auto max-w-3xl p-6">
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">Sign in to view your events</h2>
-            <p className="mt-3 text-slate-600">
-              The dashboard is tied to your account so you can view your own olympiad timeline entries.
-            </p>
-            <Link className="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 hover:px-4.5 hover:py-3 duration-300 ease-in-out" href="/">
-              Return home
-            </Link>
-          </div>
-        </main>
-      );
-    }
-
-    return (
-        <main className="p-6">
-            <div className="text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
-                <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
-                    <p className="p-1 text-sm text-slate-500">Experience</p>
-                    <p className="p-1 text-2xl font-semibold">{progress?.experience ?? 0} XP</p>
-                    <p className="p-1 text-sm">Level {progress?.level ?? 1}</p>
-                </div>
-                <div className="w-1/2 bg-white rounded-2xl shadow-lg border border-slate-200 flex-column items-center gap-3">
-                    <form id="urlForm" className="ml-5 mt-4 w-full flex gap-3" onSubmit={handleSubmit}>
-                        <input
-                            type="text"
-                            id="url_bar"
-                            name="url"
-                            placeholder="Enter Olympiad URL"
-                            className="border p-2 rounded w-full"
-                        />
-                        <button type="submit" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out">
-                            Parse
-                        </button>
-                    </form>
-                    <div className="flex-row justify-start items-center gap-3">
-                        <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/manage")}> Manage Events </button>
-                        <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/my_olympiads")}> My Olympiads </button>
-                    </div>
-                </div>
-
-                <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
-                    <p className="p-1 text-sm text-slate-500">Missed deadlines</p>
-                    <p className="p-1 text-lg font-semibold">{missedMessage}</p>
-                </div>
-            </div>
-            {/* Calendar Component */}
-            <div className="flex flex-row items-top mt-30 gap-10">
-                <div className="w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-4">
-                    {!loading && <Calendar events={events} onEventsChanged={() => setRefreshToken((prev) => prev + 1)} />}
-                </div>
-                {/* Upcoming Events Component */}
-                {!loading && <UpcomingEvents limit={5} refreshToken={refreshToken} />}
-            </div>
-            {/* Loading Overlay */}
-            {loading && <LoadingOverlay />}
-        </main>
-    );
+  return <main className="mx-auto max-w-7xl p-4 md:p-8"><div className="grid gap-6 lg:grid-cols-[220px_1fr]"><aside className="surface h-fit p-3"><nav className="space-y-1 text-sm"><Link href="/dashboard" className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2"><PanelLeft className="h-4 w-4" /> Dashboard</Link><Link href="/my_olympiads" className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-secondary"><Trophy className="h-4 w-4" /> My Olympiads</Link><Link href="/manage" className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-secondary"><Compass className="h-4 w-4" /> Manage Events</Link></nav></aside>
+  <section className="space-y-6"><div className="surface p-4 md:p-5"><div className="grid gap-4 md:grid-cols-[1fr_2fr_1fr]"><div><p className="text-xs text-muted-foreground">Experience</p><p className="text-2xl font-semibold">{progress?.experience ?? 0} XP</p><p className="text-sm text-muted-foreground">Level {progress?.level ?? 1}</p></div><form onSubmit={handleSubmit} className="flex gap-2"><input name="url" placeholder="Parse olympiad URL" className="h-10 w-full rounded-lg border bg-background/50 px-3" /><button className="h-10 rounded-lg bg-primary px-4 text-primary-foreground">Parse</button></form><div className="text-sm"><p className="text-xs text-muted-foreground">Status</p><p>{missedMessage}</p></div></div></div>
+  <div className="grid gap-6 xl:grid-cols-[1.75fr_1fr]"><div className="surface p-3 md:p-5"><div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Calendar</h2><span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><CalendarDays className="h-3.5 w-3.5"/> drag, drop, edit</span></div><Calendar events={events} onEventsChanged={() => setRefreshToken((p) => p + 1)} /></div><UpcomingEvents limit={6} refreshToken={refreshToken} /></div></section></div>{loading && <LoadingOverlay />}</main>;
 }

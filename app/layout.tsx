@@ -51,13 +51,10 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
         </head>
         <body className={`--font-geist-sans --font-geist-mono antialiased`}>
           <SpeedInsights/>
-          <header className="p-4 relative">
-            <div className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8">
-              <Link className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8" href="/">
-                Trackolymp.tech
-              </Link>
-            </div>
-            <div className="absolute top-0.5 bottom-2 right-4 flex items-center gap-4 mr-4 h-full">
+          <header className="sticky top-0 z-50 border-b border-white/10 bg-background/75 backdrop-blur-md">
+            <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 p-4">
+            <Link className="text-lg font-semibold tracking-tight" href="/">Trackolymp.tech</Link>
+            <div className="flex items-center gap-3">
               <ThemeToggle />
               <SignedOut>
                 <SignInButton>
@@ -80,6 +77,7 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
                 </Link>
                 <UserButton />
               </SignedIn>
+            </div>
             </div>
           </header>
           {children}

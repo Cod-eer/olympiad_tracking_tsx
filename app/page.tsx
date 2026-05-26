@@ -1,169 +1,71 @@
 "use client";
 
-import "./globals.css";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Calendar from "./components/fullcalendar";
 import LoadingOverlay from "./components/loading";
 import UpcomingEvents from "./components/upcoming-events";
 
-interface Event {
-    title: string;
-    start: string;
-    end?: string;
-}
-
-const goals = [
-  "Bring olympiad schedules from different organizations into one place.",
-  "Reduce manual tracking with clear, searchable timelines.",
-  "Help students stay aligned with reminders, updates, and result deadlines.",
-];
-
-const managerDemoFeatures = [
-    {
-        title: "Source parsing",
-        description:
-            "Paste an olympiad URL to parse competition data and get all deadlines, eligibility criteria, and important dates.",
-    },
-    {
-        title: "Calendar intelligence",
-        description:
-            "Visualize contest phases in month/week/day view to detect overlaps and planning risk early.",
-    },
-    {
-        title: "Upcoming workflow",
-        description:
-            "Review the next actionable events so you can view or edit registrations, exams, and submissions.",
-    },
-];
+type Event = { title: string; start: string; end?: string };
 
 export default function Landing() {
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [refreshToken, setRefreshToken] = useState(0);
 
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        e.preventDefault();
-        setLoading(true);
-        const newForm = new FormData(e.currentTarget);
-        const urlValue = newForm.get("url") as string;
+  useEffect(() => {
+    fetch("/api/show_events").then((r) => r.json()).then(setEvents).catch(() => setEvents([]));
+  }, [refreshToken]);
 
-        try {
-            const response = await fetch("/api/call_result", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ url: urlValue }),
-            });
-            const { data } = await response.json();
-            if (data.error) {
-                console.error("Error:", data.error);
-            }
+  const stats = useMemo(() => [
+    { label: "Tracked Olympiads", value: `${events.length}+` },
+    { label: "Deadline Alerts", value: "Real-time" },
+    { label: "Parser to Calendar", value: "< 30s" },
+  ], [events.length]);
 
-            sessionStorage.setItem("parsedData", JSON.stringify(data));
-        } catch (error) {
-            console.error("Error:", error);
-        } finally {
-            setLoading(false);
-            router.push(`/result`);
-        }
-    }
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoading(true);
+    const url = String(new FormData(e.currentTarget).get("url") ?? "");
+    try {
+      const response = await fetch("/api/call_result", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) });
+      const { data } = await response.json();
+      sessionStorage.setItem("parsedData", JSON.stringify(data));
+      router.push("/result");
+    } finally { setLoading(false); }
+  }
 
-    const [events, setEvents] = useState<Event[]>([]);
-    const [refreshToken, setRefreshToken] = useState(0);
-    useEffect(() => {
-        fetch("/api/show_events")
-            .then((res) => res.json())
-            .then((data) => setEvents(data))
-            .catch((err) => console.error(err));
-    }, [refreshToken]);
+  return (
+    <main className="mx-auto max-w-7xl p-4 md:p-8 space-y-6">
+      <section className="surface relative overflow-hidden p-6 md:p-10">
+        <div className="absolute -top-16 -right-16 h-48 w-48 rounded-full bg-indigo-500/20 blur-3xl" />
+        <div className="absolute -bottom-20 left-10 h-52 w-52 rounded-full bg-cyan-500/15 blur-3xl" />
+        <div className="relative grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-indigo-400/30 bg-indigo-500/10 px-3 py-1 text-xs"><Sparkles className="h-3.5 w-3.5" /> Planner built for serious olympiad candidates</p>
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">Own every olympiad deadline with a high-signal command center.</h1>
+            <p className="mt-4 max-w-2xl text-sm md:text-base text-muted-foreground">Parse any olympiad site, sync key dates into a structured timeline, and never miss application windows, qualifiers, or result releases.</p>
+            <form onSubmit={handleSubmit} className="mt-6 flex flex-col md:flex-row gap-3">
+              <input name="url" type="text" placeholder="Paste olympiad URL" className="h-11 flex-1 rounded-xl border bg-background/60 px-4 outline-none focus:ring-2 focus:ring-primary/40" />
+              <button className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-primary-foreground font-medium hover:opacity-90 transition">Run parser demo <ArrowRight className="h-4 w-4" /></button>
+            </form>
+          </div>
+          <div className="grid gap-3 self-end">
+            {stats.map((s) => <div key={s.label} className="rounded-xl border border-white/10 bg-background/45 p-4"><div className="text-2xl font-semibold">{s.value}</div><div className="text-xs text-muted-foreground">{s.label}</div></div>)}
+          </div>
+        </div>
+      </section>
 
-    const [limit, setLimit] = useState(5);
-    const calendarRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!calendarRef.current) return;
-
-        const updateLimit = () => {
-            const height = calendarRef.current!.offsetHeight;
-            const itemHeight = 180;
-            const newLimit = Math.max(1, Math.floor(height / itemHeight));
-            setLimit(newLimit);
-        };
-        updateLimit();
-
-        window.addEventListener("resize", updateLimit);
-        return () => window.removeEventListener("resize", updateLimit);
-    }, []);
-
-    return (
-        <main className="mx-auto px-6 py-3">
-            <section className=" grid gap-6 md:grid-cols-2">
-                <div className="rounded-2xl bg-white p-6 shadow-md">
-                    <h2 className="mb-3 text-2xl font-semibold text-slate-800">Our Aim</h2>
-                    <p className="text-slate-600 text-base leading-relaxed max-w-prose tracking-[0.01em] break-keep">
-                        Build an interactive planning platform that helps students track, manage, and edit all of the events they are involved in.
-                    </p>
-                </div>
-
-                <div className="rounded-2xl bg-white p-6 shadow-md">
-                    <h2 className="mb-3 text-2xl font-semibold text-slate-800">Our Goals</h2>
-                    <ul className="list-disc space-y-2 pl-5 text-slate-600">
-                        {goals.map((goal) => (
-                            <li key={goal}>{goal}</li>
-                        ))}
-                    </ul>
-                </div>
-            </section>
-
-            <section className="mt-8 rounded-2xl bg-white p-6 shadow-md">
-                <h2 className="text-2xl font-semibold text-slate-800">Parse any olympiad websites</h2>
-                <p className="mt-2 text-slate-600">
-                    Trackolymp.tech will parse all the important information from any olympiad website and present it in a user-friendly way.
-                </p>
-
-                <form id="urlForm" className="mt-6 flex flex-col gap-3 md:flex-row" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        id="url_bar"
-                        name="url"
-                        placeholder="Enter Olympiad URL"
-                        className="w-full rounded-lg border border-slate-300 p-3"
-                    />
-                    <button
-                        type="submit"
-                        className="rounded-lg bg-slate-800 px-4 py-2 m-3 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out"
-                    >
-                        Run Manager Parser Demo
-                    </button>
-                </form>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-3">
-                    {managerDemoFeatures.map((feature) => (
-                        <article key={feature.title} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <h3 className="text-lg font-semibold text-slate-800">{feature.title}</h3>
-                            <p className="mt-2 text-sm text-slate-600">{feature.description}</p>
-                        </article>
-                    ))}
-                </div>
-            </section>
-
-            <section className="mt-8 rounded-2xl bg-white p-6 shadow-md">
-                <div className="flex flex-col border-b border-slate-500 pb-6">
-                    <h2 className="text-2xl font-semibold text-slate-800">Calendar Demo</h2>
-                    <p className="mt-2 text-slate-600">
-                        Interactive timeline preview for current and upcoming olympiad events.
-                    </p>
-                </div>
-                <div className="mt-6 grid gap-6 lg:grid-cols-[2fr_1fr]">
-                    <div ref={calendarRef}>
-                        {!loading && <Calendar events={events} onEventsChanged={() => setRefreshToken((prev) => prev + 1)} />}
-                    </div>
-                    {!loading && <UpcomingEvents limit={limit} refreshToken={refreshToken} />}
-                </div>
-            </section>
-
-            {loading && <LoadingOverlay />}
-        </main>
-    );
+      <section className="grid gap-6 xl:grid-cols-[1.7fr_1fr]">
+        <div className="surface p-3 md:p-5">
+          <div className="mb-4 flex items-center justify-between"><h2 className="text-lg font-semibold">Live Calendar</h2><span className="text-xs text-muted-foreground">click date to add • drag to move</span></div>
+          <Calendar events={events} onEventsChanged={() => setRefreshToken((p) => p + 1)} />
+        </div>
+        <UpcomingEvents limit={6} refreshToken={refreshToken} />
+      </section>
+      {loading && <LoadingOverlay />}
+    </main>
+  );
 }
