@@ -182,7 +182,7 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
         <div className="w-full max-w-6xl mx-auto">
             <FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
+                initialView="dayGridWeek"
                 events={calendarEvents}
                 selectable
                 editable
