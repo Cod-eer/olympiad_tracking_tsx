@@ -342,12 +342,21 @@ td[colspan="3"] {
   background-color: rgb(30 41 59) !important;
 }
 
-.dark .text-slate-900,
-.dark .text-slate-950,
+.dark .text-slate-900 {
+  color: rgb(241 245 249) !important;
+}
+.dark .text-slate-950 {
+  color: rgb(241 245 249) !important;
+}
 .dark .text-slate-800 {
   color: rgb(241 245 249) !important;
 }
-
+.dark .text-lg {
+  color: rgb(241 245 249) !important;
+}
+.dark p {
+  color: rgb(241 245 249) !important;
+}
 .dark .text-slate-700,
 .dark .text-slate-600 {
   color: rgb(203 213 225) !important;
