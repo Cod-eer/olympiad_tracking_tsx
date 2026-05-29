@@ -49,7 +49,7 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
           <meta name="twitter:description" content={description} />
 
         </head>
-        <body className={`--font-geist-sans --font-geist-mono antialiased`}>
+        <body className={`--font-geist-sans --font-geist-mono antialiased bg-white`}>
           <SpeedInsights/>
           <header className="p-4 relative">
             <div className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8">

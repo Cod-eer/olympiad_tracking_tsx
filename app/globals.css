@@ -328,10 +328,22 @@ td[colspan="3"] {
   background-color: rgb(15 23 42) !important;
 }
 
+.dark .bg-slate-900 {
+  background-color: rgb(25, 77, 200) !important;
+}
+
+.dark .bg-slate-800 {
+  background-color: rgb(49, 98, 212) !important;
+}
+
 .dark .border-slate-200,
 .dark .border-gray-200,
 .dark .border-slate-300 {
   border-color: rgb(51 65 85) !important;
+}
+
+.dark .label {
+  color: rgb(241 245 249) !important;
 }
 
 .dark .bg-slate-50,
@@ -348,6 +360,15 @@ td[colspan="3"] {
 .dark .text-slate-800 {
   color: rgb(241 245 249) !important;
 }
+
+.dark .text-slate-750 {
+  color: rgb(241 245 249) !important;
+}
+
+.dark .text-slate-700 {
+  color: rgb(241 245 249) !important;
+}
+
 .dark .text-lg {
   color: rgb(241 245 249) !important;
 }

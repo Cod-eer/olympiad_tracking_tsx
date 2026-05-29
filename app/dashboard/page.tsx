@@ -99,7 +99,7 @@ export default function Dashboard() {
     }
 
     return (
-        <main className="mx-auto max-w-7xl p-4">
+        <main className="mx-auto max-w-8xl p-4">
             <div className="text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
                 <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
                     <p className="p-1 text-sm text-slate-500">Experience</p>
@@ -113,7 +113,7 @@ export default function Dashboard() {
                             id="url_bar"
                             name="url"
                             placeholder="Enter Olympiad URL"
-                            className="border p-2 rounded w-full"
+                            className="border p-2 rounded w-full text-slate-800"
                         />
                         <button type="submit" className="rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out">
                             Parse
@@ -132,13 +132,14 @@ export default function Dashboard() {
             </div>
             {/* Calendar Component */}
             <div className="flex flex-row items-top mt-10 gap-10">
-              <aside className="surface h-fit p-3">
+              {/*<aside className="surface h-fit p-3">
                 <nav className="space-y-1 text-sm">
                   <a className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2" href="/dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-panel-left h-4 w-4" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg> Dashboard</a>
                   <a className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-secondary" href="/my_olympiads"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trophy h-4 w-4" aria-hidden="true"><path d="M10 14.66v1.626a2 2 0 0 1-.976 1.696A5 5 0 0 0 7 21.978"></path><path d="M14 14.66v1.626a2 2 0 0 0 .976 1.696A5 5 0 0 1 17 21.978"></path><path d="M18 9h1.5a1 1 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M6 9a6 6 0 0 0 12 0V3a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1z"></path><path d="M6 9H4.5a1 1 0 0 1 0-5H6"></path></svg> My Olympiads</a>
                   <a className="flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-secondary" href="/manage"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-compass h-4 w-4" aria-hidden="true"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z"></path><circle cx="12" cy="12" r="10"></circle></svg> Manage Events</a>
                 </nav>
               </aside>
+              */}
                 <div className="w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h2 className="font-semibold">Calendar</h2>
