@@ -3,6 +3,7 @@
 import Link from "next/link";
 import React, { FormEvent, useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
+import { Spinner } from "../components/ui/spinner";
 
 type OlympiadOption = {
   id: number;
@@ -134,7 +135,12 @@ export default function MyOlympiadsPage() {
   }
 
   if (!isLoaded || isLoading) {
-    return <main className="mx-auto max-w-6xl p-6">Loading event manager…</main>;
+    return <main className="mx-auto max-w-6xl p-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
+        <Spinner className="size-7" />
+        <h2 className="text-2xl font-semibold text-slate-900">Loading olympiads...</h2>
+      </div>
+    </main>;
   }
 
   if (!isSignedIn) {
@@ -165,7 +171,7 @@ export default function MyOlympiadsPage() {
         </Link>
       </div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">My Olympiads</h1>
+        <h1 className="text-3xl font-bold text-slate-900">My Olympiads</h1>
 
         <Link href="/manage" className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 hover:px-4.5 hover:py-2.5 hover:text-white duration-300">
           Add Olympiad
@@ -196,7 +202,7 @@ export default function MyOlympiadsPage() {
               </div>
 
               <div className="flex gap-2">
-                <Link href={`/my_olympiads/${olympiad.id}`} className="rounded-md border px-3 py-1 hover:px-3.5 hover:py-1.5 hover:bg-slate-100 duration-300 text-sm">
+                <Link href={`/my_olympiads/${olympiad.id}`} className="text-slate-600 rounded-md border px-3 py-1 hover:px-3.5 hover:py-1.5 hover:bg-slate-100 duration-300 text-sm">
                   View
                 </Link>
 

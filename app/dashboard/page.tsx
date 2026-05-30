@@ -100,7 +100,7 @@ export default function Dashboard() {
 
     return (
         <main className="mx-auto max-w-8xl p-4">
-            <div className="text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
+            <div className="text-center mt-2 flex justify-center items-baseline gap-3 items-stretch">
                 <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
                     <p className="p-1 text-sm text-slate-500">Experience</p>
                     <p className="p-1 text-2xl font-semibold">{progress?.experience ?? 0} XP</p>

@@ -28,12 +28,12 @@ interface OlympiadOption {
 }
 
 const urgencyEventClasses: Record<string, string> = {
-    completed: "bg-slate-300 text-slate-700 ring-1 ring-slate-200 line-through",
-    overdue: "bg-red-100 text-red-950 ring-1 ring-red-300",
-    critical: "bg-red-100 text-red-950 ring-1 ring-red-300",
-    soon: "bg-yellow-100 text-yellow-950 ring-1 ring-yellow-300",
-    normal: "bg-indigo-50 text-indigo-950 ring-1 ring-indigo-200",
-    unknown: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+    completed: "border-slate-300 bg-slate-100 text-slate-600 line-through dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300",
+    overdue: "border-slate-200 bg-red-100 text-red-950 dark:border-slate-700 dark:bg-red-950/35 dark:text-red-100",
+    critical: "border-slate-200 bg-red-100 text-red-950 dark:border-slate-700 dark:bg-red-950/35 dark:text-red-100",
+    soon: "border-slate-200 bg-amber-100 text-amber-950 dark:border-slate-700 dark:bg-amber-950/35 dark:text-amber-100",
+    normal: "border-slate-200 bg-indigo-50 text-indigo-950 dark:border-slate-700 dark:bg-indigo-950/35 dark:text-indigo-100",
+    unknown: "border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-200",
 };
 
 const calendarDateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -114,7 +114,12 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
         return {
             ...event,
             id,
+            classNames: ["olympiad-calendar-event"],
+            backgroundColor: "transparent",
+            borderColor: "transparent",
+            textColor: "inherit",
             dateLabel: formatEventDateRange(event.start, event.end),
+            daysCount: event.end ? Math.ceil((new Date(event.end).getTime() - new Date(event.start).getTime()) / (1000 * 60 * 60 * 24)) + 1 : 1,
             urgencyScoreLabel: typeof event.urgency === "number" ? event.urgency.toFixed(2) : null,
             isCompleted,
         };
@@ -179,10 +184,10 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
     }
 
     return (
-        <div className="w-full max-w-6xl mx-auto">
+        <div className="olympiad-calendar w-full">
             <FullCalendar
                 plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridWeek"
+                initialView="dayGridMonth"
                 events={calendarEvents}
                 selectable
                 editable
@@ -231,7 +236,7 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                     const urgencyClass = (isCompletedOlympiad ? urgencyEventClasses.completed : (urgencyEventClasses[urgencyLevel] ?? urgencyEventClasses.unknown));
 
                     return (
-                        <div className={`rounded-sm px-1 py-0.5 leading-tight ${urgencyClass} ${isCompletedOlympiad ? "opacity-60" : ""}`}>
+                        <div className={`-full rounded-lg border px-2 py-1 leading-tight shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md ${urgencyClass} ${isCompletedOlympiad ? "opacity-70" : ""}`}>
                             <div className="mb-0.5 flex items-center gap-1">
                                 <button
                                     type="button"
@@ -239,7 +244,7 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                                     aria-checked={isCompletedOlympiad}
                                     data-state={isCompletedOlympiad ? "checked" : "closed"}
                                     value="on"
-                                    className="peer rounded-lg border-2 ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:border-none data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground h-5 w-5 shrink-0 border-foreground/20 bg-transparent"
+                                    className="peer  flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-current/25 bg-white/50 text-current transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=checked]:border-transparent data-[state=checked]:bg-slate-700 data-[state=checked]:text-white dark:bg-slate-950/30 dark:data-[state=checked]:bg-slate-200 dark:data-[state=checked]:text-slate-950"
                                     onClick={async (event) => {
                                         event.stopPropagation();
                                         event.preventDefault();
@@ -259,13 +264,13 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                                         </span>
                                     )}
                                 </button>
-                                <div className="whitespace-normal break-words text-[10px] font-semibold uppercase opacity-75">
+                                <div className="whitespace-normal break-words text-[10px] font-bold uppercase tracking-wide opacity-75">
                                     {String(info.event.extendedProps.dateLabel ?? "")}
                                     {deadlineStatus && ` - ${deadlineStatus}`}
                                 </div>
                             </div>
                             <div className="whitespace-normal break-words text-xs font-semibold">
-                                <p className="text-[8px] opacity-75"> {info.event.extendedProps.olympiadTitle}</p>
+                                <p className="mb-0.5 text-[9px] font-medium opacity-70"> {info.event.extendedProps.olympiadTitle}</p>
                                 {info.event.title}
                             </div>
                         </div>
