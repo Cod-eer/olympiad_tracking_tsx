@@ -122,6 +122,7 @@ export default function Dashboard() {
                     <div className="flex-row justify-start items-center gap-3">
                         <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/manage")}> Manage Events </button>
                         <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/my_olympiads")}> My Olympiads </button>
+                        <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/olympiad_hub")}> Olympiad Hub </button>
                     </div>
                 </div>
 

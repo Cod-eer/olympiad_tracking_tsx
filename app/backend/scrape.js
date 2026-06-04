@@ -32,6 +32,7 @@ Rules:
 - DO NOT use any other languages.
 - If a section is not mentioned, return an empty array (or empty string for name).
 - Convert all dates to dd-mm-yyyy.
+- If starting or ending date is missing, use the available one for both dateStart and dateEnd.
 - If only month/year is available, use day = 01.
 - Do not infer or guess missing data.
 - Be concise and factual.
@@ -79,7 +80,7 @@ async function extractFromChunk(chunkText) {
   ];
 
   const response = await openai.chat.completions.create({
-    model: "gpt-4o",  // or a bigger model if you want more tokens
+    model: "gpt-4.1",  // or a bigger model if you want more tokens
     messages,
     temperature: 0.2,
   });
