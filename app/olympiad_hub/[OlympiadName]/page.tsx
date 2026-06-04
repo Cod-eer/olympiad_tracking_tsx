@@ -6,7 +6,6 @@ import { useUser } from "@clerk/nextjs";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
-
 type Olympiad = {
   id: number;
   name: string;
@@ -33,23 +32,48 @@ function toInputDate(value: string) {
   return new Date(value).toISOString().slice(0, 10);
 }
 
-export default function OlympiadDetailsPage() {
+export default function OlympiadHubPage() {
   const { isSignedIn, isLoaded } = useUser();
-  const params = useParams<{ OlympiadId: string }>();
-  const olympiadId = params?.OlympiadId;
+  const params = useParams<{ name: string }>();
+  const [retrievedId, setRetrievedId] = useState<number | null>(null);
+  const name = params?.name;
+  async function extractId() {
+    if (!name) {
+      return null;
+    }
+    const response = await fetch("/backend/generate_name", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ dashedName: name }),
+    });
+    const data = await response.json();
+    return data.id;
+  }
+  useEffect(() => {
+    if (!name) {
+      return;
+    }
+    extractId().then((id) => {
+      if (id) {
+        setRetrievedId(id);
+      } else {
+        setError("Invalid olympiad name.");
+      }
+    });
+  }, [name]);
 
   const [olympiad, setOlympiad] = useState<Olympiad | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editUrl, setEditUrl] = useState("");
   const [events, setEvents] = useState<OlympiadEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [editName, setEditName] = useState("");
-  const [editUrl, setEditUrl] = useState("");
 
   async function loadOlympiadData() {
-    if (!olympiadId) {
+    if (!retrievedId) {
       return;
     }
 
@@ -57,7 +81,7 @@ export default function OlympiadDetailsPage() {
     setError(null);
 
     try {
-      const response = await fetch(`/api/my_olympiads/${olympiadId}`, { cache: "no-store" });
+      const response = await fetch(`/api/olympiad_hub/${retrievedId}`, { cache: "no-store" });
       const data = await response.json();
 
       if (!response.ok) {
@@ -76,72 +100,15 @@ export default function OlympiadDetailsPage() {
     }
   }
 
+
   useEffect(() => {
-    if (isLoaded && isSignedIn && olympiadId) {
+    if (isLoaded && isSignedIn && name) {
       loadOlympiadData();
     } else if (isLoaded) {
       setIsLoading(false);
     }
-  }, [isLoaded, isSignedIn, olympiadId]);
+  }, [isLoaded, isSignedIn, name]);
 
-  async function handleOlympiadUpdate(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsSaving(true);
-    setError(null);
-    setStatus(null);
-
-    try {
-      const response = await fetch(`/api/my_olympiads/${olympiadId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: editName,
-          url: editUrl,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Unable to update olympiad.");
-      }
-
-      setStatus("Olympiad updated successfully.");
-      setIsEditOpen(false);
-      await loadOlympiadData();
-    } catch (saveError) {
-      const message = saveError instanceof Error ? saveError.message : "Unable to update olympiad.";
-      setError(message);
-    } finally {
-      setIsSaving(false);
-    }
-  }
-
-  async function handleOlympiadDelete() {
-    if (!olympiadId) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/my_olympiads/${olympiadId}`, {
-        method: "DELETE",
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Unable to delete olympiad.");
-      }
-
-      setStatus("Olympiad deleted successfully.");
-      const router = useRouter();
-      router.push("/my_olympiads");
-      router.refresh();
-    } catch (deleteError) {
-      const message = deleteError instanceof Error ? deleteError.message : "Unable to delete olympiad.";
-      setError(message);
-    }
-  }
 
   if (!isLoaded || isLoading) {
     return <main className="mx-auto max-w-6xl p-6">Loading olympiad…</main>;
@@ -205,20 +172,6 @@ export default function OlympiadDetailsPage() {
                   <p className="mt-1 text-slate-600">{olympiad.rewards || "Not provided"}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(true)}
-                className="rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
-              >
-                Edit olympiad
-              </button>
-              <button
-                type="button"
-                onClick={handleOlympiadDelete}
-                className="rounded-lg bg-red-700 px-4 py-3 text-sm font-semibold text-white hover:bg-red-500 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
-              >
-                Delete olympiad
-              </button>
             </div>
           </section>
 
@@ -240,53 +193,6 @@ export default function OlympiadDetailsPage() {
               </div>
             )}
           </section>
-
-          {isEditOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-              <form onSubmit={handleOlympiadUpdate} className="flex flex-col w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-                <h2 className="text-xl font-semibold text-slate-900">Edit olympiad</h2>
-                <div className="mt-5 grid w-full gap-4">
-                  <label className="grid gap-2 w-full text-sm font-medium text-slate-700">
-                    Olympiad name
-                    <input
-                      required
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                    />
-                  </label>
-
-                  <label className="grid gap-2 text-sm font-medium text-slate-700">
-                    Olympiad website (optional)
-                    <input
-                      type="url"
-                      className="rounded-lg border border-slate-300 px-3 py-2"
-                      value={editUrl}
-                      onChange={(e) => setEditUrl(e.target.value)}
-                    />
-                  </label>
-                </div>
-
-                <div className="mt-6 flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditOpen(false)}
-                    className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100 hover:px-4.5 hover:py-2.5 hover:text-slate-900 duration-300 hover:cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 hover:bg-slate-700 hover:px-4.5 hover:py-2.5 hover:text-white duration-300 hover:cursor-pointer"
-                  >
-                    {isSaving ? "Saving…" : "Save changes"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
         </>
       )}
     </main>

@@ -42,7 +42,7 @@ export default function OlympiadHub() {
                         <li key={olympiad.id} className="border p-4 rounded">
                             <div className="flex justify-between mb-2">
                                 <h2 className="text-xl font-bold">{olympiad.name}</h2>
-                                <button className="text-sm text-blue-500 hover:underline" onClick={() => router.push(`/olympiad_hub/${olympiad.id}`)}>
+                                <button className="text-sm text-blue-500 hover:underline" onClick={() => router.push(`/olympiad_hub/${olympiad.name.replace(/\s+/g, "-").toLowerCase()}`)}>
                                     View Details
                                 </button>
                             </div>
