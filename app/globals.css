@@ -510,6 +510,29 @@ td[colspan="3"] {
   color: rgb(15 23 42) !important;
 }
 
+.fc-scroller::-webkit-scrollbar{
+  width: 0px;
+  height: 0px;
+}
+
+.fc-scroller-liquid-absolute::-webkit-scrollbar {
+  width: 5px;
+}
+
+.fc-scroller-liquid-absolute::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+.fc-scroller-liquid-absolute::-webkit-scrollbar-thumb {
+  background: #9ca3af;
+  border-radius: 999px;
+}
+
+.fc-scroller-liquid-absolute::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
+
 @media (max-width: 900px) {
   .olympiad-calendar {
     overflow-x: auto;

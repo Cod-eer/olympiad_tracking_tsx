@@ -145,10 +145,16 @@ function transformUrl(url) {
 
 export async function ScrapeReturnDict(url) {
   try {
-      const browser = await chromium.connectOverCDP(`wss://production-sfo.browserless.io?token=${process.env.BROWSERLESS_TOKEN}`);
+      const browser = await chromium.connect(
+        `wss://production-sfo.browserless.io/chromium/playwright?token=${process.env.BROWSERLESS_TOKEN}`
+      );
       url = transformUrl(url);
-      const page = await browser.newPage();
-      await page.goto(url);
+      const context = browser.contexts()[0] || await browser.newContext();
+      const page = await context.newPage();
+      await page.goto(url, {
+        waitUntil: "domcontentloaded",
+        timeout: 120000,
+      });
 
       const text = await page.evaluate(() => {
         return document.body.innerText
@@ -157,9 +163,10 @@ export async function ScrapeReturnDict(url) {
           .replace(/\s+/g, " ")
           .trim()
       });
-
       // close browser
+      if (browser.isConnected()) {
       await browser.close();
+    }
 
       // Prepare OpenAI client
       const chunks = chunkText(text, 6000);
