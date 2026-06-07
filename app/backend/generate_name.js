@@ -30,7 +30,7 @@ export async function POST(req) {
 
     const { dashedName } = await req.json();
     const { data, error } = await supabase
-        .from('olympiads')
+        .from('verified_olympiads')
         .select('id')
         .eq('dashed_name', dashedName)
         .single();

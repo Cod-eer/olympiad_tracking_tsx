@@ -90,7 +90,7 @@ export default function Dashboard() {
             <p className="mt-3 text-slate-600">
               The dashboard is tied to your account so you can view your own olympiad timeline entries.
             </p>
-            <Link className="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 hover:px-4.5 hover:py-3 duration-300 ease-in-out" href="/">
+            <Link className="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700 hover:px-4.5 hover:py-2.5 duration-300 ease-in-out" href="/">
               Return home
             </Link>
           </div>

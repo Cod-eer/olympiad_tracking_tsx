@@ -7,10 +7,10 @@ const isPublicRoute = createRouteMatcher([
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
-  "/api/call_result(.*)",
-  "/api/show_events(.*)",
   "/backend(.*)",
   "/result(.*)",
+  "/api(.*)",
+  "/olympiad_hub(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
@@ -22,10 +22,9 @@ export default clerkMiddleware(async (auth, request) => {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
-  if (isPublicRoute(request)) {
-    return;
+  if (!isPublicRoute(request)) {
+    await auth.protect();
   }
-  auth.protect();
 });
 
 

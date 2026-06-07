@@ -25,7 +25,7 @@ export default function OlympiadHub() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center min-h-screen p-4">
+        <div className="flex flex-col items-center min-h-screen p-4 mt-3">
             <h1 className="text-2xl font-bold mb-4">Olympiad Hub</h1>
             <input
                 type="text"

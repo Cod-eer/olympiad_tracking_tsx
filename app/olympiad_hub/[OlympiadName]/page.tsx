@@ -34,9 +34,10 @@ function toInputDate(value: string) {
 
 export default function OlympiadHubPage() {
   const { isSignedIn, isLoaded } = useUser();
-  const params = useParams<{ name: string }>();
   const [retrievedId, setRetrievedId] = useState<number | null>(null);
+  const params = useParams<{ name: string }>();
   const name = params?.name;
+  console.log(name);
   async function extractId() {
     if (!name) {
       return null;
@@ -120,8 +121,8 @@ export default function OlympiadHubPage() {
         <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <h2 className="text-2xl font-semibold text-slate-900">Sign in to view your olympiad</h2>
           <p className="mt-3 text-slate-600">You need to sign in to view this page.</p>
-          <Link className="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white" href="/my_olympiads">
-            Back to my olympiads
+          <Link className="mt-6 inline-flex rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white" href="/olympiad_hub">
+            Back to olympiad hub
           </Link>
         </div>
       </main>

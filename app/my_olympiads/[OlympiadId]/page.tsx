@@ -5,6 +5,8 @@ import { redirect, useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Spinner } from "../../components/ui/spinner";
+import { ScrapeReturnDict } from '../../backend/scrape';
 
 
 type Olympiad = {
@@ -38,6 +40,7 @@ export default function OlympiadDetailsPage() {
   const params = useParams<{ OlympiadId: string }>();
   const olympiadId = params?.OlympiadId;
 
+
   const [olympiad, setOlympiad] = useState<Olympiad | null>(null);
   const [events, setEvents] = useState<OlympiadEvent[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -47,6 +50,11 @@ export default function OlympiadDetailsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [editName, setEditName] = useState("");
   const [editUrl, setEditUrl] = useState("");
+  const noUrl = (olympiad?.url === null || olympiad?.url === undefined);
+  console.log(noUrl);
+
+  const [sendToHub, setSendToHub] = useState(false);
+  const [difficulty, setDifficulty] = useState<number | null>(null);
 
   async function loadOlympiadData() {
     if (!olympiadId) {
@@ -143,8 +151,37 @@ export default function OlympiadDetailsPage() {
     }
   }
 
+  async function addToHub() {
+    if (!olympiadId) {
+      return;
+    }
+    setIsSaving(true);
+    const response = await fetch(`/api/call_result`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ url: editUrl}),
+    })
+    const data = await response.json();
+    data.difficulty = difficulty;
+    await fetch(`/api/add_to_hub`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ dict: data }),
+    });
+    setIsSaving(false);
+  }
+
   if (!isLoaded || isLoading) {
-    return <main className="mx-auto max-w-6xl p-6">Loading olympiad…</main>;
+    return <main className="mx-auto max-w-6xl p-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
+        <Spinner className="size-7" />
+        <h2 className="text-2xl font-semibold text-slate-900">Loading olympiad...</h2>
+      </div>
+    </main>;
   }
 
   if (!isSignedIn) {
@@ -205,20 +242,29 @@ export default function OlympiadDetailsPage() {
                   <p className="mt-1 text-slate-600">{olympiad.rewards || "Not provided"}</p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsEditOpen(true)}
-                className="rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
-              >
-                Edit olympiad
-              </button>
-              <button
-                type="button"
-                onClick={handleOlympiadDelete}
-                className="rounded-lg bg-red-700 px-4 py-3 text-sm font-semibold text-white hover:bg-red-500 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
-              >
-                Delete olympiad
-              </button>
+              <div className="mt-4 flex flex-row items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setSendToHub(true)}
+                  className="rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
+                >
+                  Send to Hub
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsEditOpen(true)}
+                  className="rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
+                >
+                  Edit olympiad
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOlympiadDelete}
+                  className="rounded-lg bg-red-700 px-4 py-3 text-sm font-semibold text-white hover:bg-red-500 hover:px-4.5 hover:py-3.5 duration-300 hover:cursor-pointer"
+                >
+                  Delete olympiad
+                </button>
+              </div>
             </div>
           </section>
 
@@ -240,6 +286,110 @@ export default function OlympiadDetailsPage() {
               </div>
             )}
           </section>
+
+          {sendToHub && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+              <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl">
+
+                <div className="border-b border-slate-100 p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100">
+                      🌍
+                    </div>
+
+                    <div>
+                      <h2 className="text-2xl font-bold text-slate-900">
+                        Share on trackolymp.tech
+                      </h2>
+                      <p className="text-sm text-slate-500">
+                        Help other students discover this olympiad.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6 p-6">
+
+                  <div>
+                    <div className="mb-3 flex items-center justify-between">
+                      <label className="font-medium text-slate-800">
+                        Difficulty Rating
+                      </label>
+
+                      <span className="rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
+                        {difficulty}/10
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      {Array.from({ length: 10 }, (_, i) => i + 1).map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setDifficulty(value)}
+                          className={`
+                            h-11 w-11 rounded-xl font-semibold transition-all
+                            ${
+                              difficulty === value
+                                ? "scale-110 bg-indigo-600 text-white shadow-lg"
+                                : "border border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50"
+                            }
+                          `}
+                        >
+                          {value}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="mt-3 flex justify-between text-xs text-slate-500">
+                      <span>Beginner</span>
+                      <span>Olympiad Elite</span>
+                    </div>
+                  </div>
+                  {noUrl && (
+                    <div className="flex items-center">
+                      <div className="flex flex-col w-full justify-center bg-slate-50 p-4 rounded-2xl">
+                        <p className="text-sm text-slate-500 mb-2">Please provide the olympiad URL</p>
+                        <input
+                          type="text"
+                          value={editUrl}
+                          onChange={(e) => setEditUrl(e.target.value)}
+                          placeholder="Olympiad URL"
+                          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-indigo-100"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-sm text-slate-700">
+                      Publishing will make this olympiad visible to the community.
+                    </p>
+                    <p className="text-sm text-slate-700">
+                      Other students will be able to discover, track, and rate it.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setSendToHub(false)}
+                      className="rounded-xl border border-slate-200 px-5 py-3 font-medium text-slate-600 hover:border-slate-300 hover:px-5.5 hover:py-3.5 duration-300"
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={addToHub}
+                      className="rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-indigo-500 hover:shadow-lg hover:px-6.5 hover:py-3.5 duration-300"
+                    >
+                      Publish Olympiad
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {isEditOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
