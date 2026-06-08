@@ -42,6 +42,29 @@ export async function POST(req) {
       .select('id')
       .single();
 
+    for (const i of dict.dates) {
+      const dateStart = toTimestamp(i.dateStart);
+      const dateEnd = toTimestamp(i.dateEnd);
+      const action = i.description;
+
+      // Insert event
+      const { data: event, error: eventError } = await supabase
+        .from('verified_events')
+        .insert({
+          olympiad_id: insertedOlympiad.id,
+          action,
+          date_start: dateStart,
+          date_end: dateEnd
+        })
+        .select('id')
+        .single();
+
+      if (eventError) {
+        if (eventError.code === '23505') continue; // unique violation → skip
+        throw eventError;
+      }
+    }
+
     if (insertError) throw insertError;
 
     return NextResponse.json({ success: 'Shared an olympiad!', id: insertedOlympiad.id });

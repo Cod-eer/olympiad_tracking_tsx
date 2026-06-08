@@ -5,6 +5,7 @@ import { redirect, useParams } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Spinner } from "../../components/ui/spinner";
 
 type Olympiad = {
   id: number;
@@ -34,36 +35,9 @@ function toInputDate(value: string) {
 
 export default function OlympiadHubPage() {
   const { isSignedIn, isLoaded } = useUser();
-  const [retrievedId, setRetrievedId] = useState<number | null>(null);
-  const params = useParams<{ name: string }>();
-  const name = params?.name;
-  console.log(name);
-  async function extractId() {
-    if (!name) {
-      return null;
-    }
-    const response = await fetch("/backend/generate_name", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ dashedName: name }),
-    });
-    const data = await response.json();
-    return data.id;
-  }
-  useEffect(() => {
-    if (!name) {
-      return;
-    }
-    extractId().then((id) => {
-      if (id) {
-        setRetrievedId(id);
-      } else {
-        setError("Invalid olympiad name.");
-      }
-    });
-  }, [name]);
+  const params = useParams<{ OlympiadName: string }>();
+  const name = params?.OlympiadName;
+  console.log("name", name);
 
   const [olympiad, setOlympiad] = useState<Olympiad | null>(null);
   const [editName, setEditName] = useState("");
@@ -74,15 +48,17 @@ export default function OlympiadHubPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   async function loadOlympiadData() {
-    if (!retrievedId) {
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await fetch(`/api/olympiad_hub/${retrievedId}`, { cache: "no-store" });
+      const response = await fetch(`/api/olympiad_hub/${name}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-cache",
+      });
       const data = await response.json();
 
       if (!response.ok) {
@@ -112,7 +88,12 @@ export default function OlympiadHubPage() {
 
 
   if (!isLoaded || isLoading) {
-    return <main className="mx-auto max-w-6xl p-6">Loading olympiad…</main>;
+    return <main className="mx-auto max-w-6xl p-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm text-center mt-10 flex justify-center items-baseline gap-3 items-stretch">
+        <Spinner className="size-7" />
+        <h2 className="text-2xl font-semibold text-slate-900">Loading olympiad...</h2>
+      </div>
+    </main>;
   }
 
   if (!isSignedIn) {

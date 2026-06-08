@@ -13,20 +13,21 @@ function getAuthorizedUserId(req) {
 
 export async function GET(req, { params }) {
   try {
-    const { OlympiadId } = await params;
+    const { OlympiadName } = await params;
     const userId = getAuthorizedUserId(req);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { data: olympiadData, error: olympiadError } = await supabase
-      .from('olympiads')
+      .from('verified_olympiads')
       .select('id, name, url, organizers, fees, rewards, requirements')
-      .eq('id', OlympiadId)
+      .eq('dashed_name', OlympiadName)
       .limit(1);
     if (olympiadError) {
       throw olympiadError;
     }
+    console.log(olympiadData);
 
     if (!olympiadData || olympiadData.length === 0) {
       return NextResponse.json({ error: 'Olympiad not found' }, { status: 404 });
@@ -35,23 +36,19 @@ export async function GET(req, { params }) {
     const olympiad = olympiadData[0];
 
     const { data: eventsData, error: eventsError } = await supabase
-      .from('event_access')
-      .select('role, olympiad_events!inner(id, action, date_start, date_end, olympiad_id, completed)')
-      .eq('user_id', userId)
-      .eq('olympiad_events.olympiad_id', OlympiadId)
-      .order('date_start', { ascending: true, referencedTable: 'olympiad_events' });
+      .from('verified_events')
+      .select('action, date_start, date_end')
+      .eq('olympiad_id', olympiad.id)
 
     if (eventsError) {
       throw eventsError;
     }
 
     const events = eventsData.map((event) => ({
-      id: event.olympiad_events.id,
-      action: event.olympiad_events.action,
-      start: event.olympiad_events.date_start,
-      end: event.olympiad_events.date_end,
-      completed: event.olympiad_events.completed,
-      role: event.role
+      id: event.id,
+      action: event.action,
+      start: event.date_start,
+      end: event.date_end,
     }));
 
     return NextResponse.json({ olympiad : olympiad, events: events });

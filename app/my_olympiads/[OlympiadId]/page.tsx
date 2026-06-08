@@ -39,7 +39,7 @@ export default function OlympiadDetailsPage() {
   const { isSignedIn, isLoaded } = useUser();
   const params = useParams<{ OlympiadId: string }>();
   const olympiadId = params?.OlympiadId;
-
+  const router = useRouter();
 
   const [olympiad, setOlympiad] = useState<Olympiad | null>(null);
   const [events, setEvents] = useState<OlympiadEvent[]>([]);
@@ -48,6 +48,7 @@ export default function OlympiadDetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [editName, setEditName] = useState("");
   const [editUrl, setEditUrl] = useState("");
   const noUrl = (olympiad?.url === null || olympiad?.url === undefined);
@@ -155,7 +156,7 @@ export default function OlympiadDetailsPage() {
     if (!olympiadId) {
       return;
     }
-    setIsSaving(true);
+    setIsSuccess(true);
     const response = await fetch(`/api/call_result`, {
       method: "POST",
       headers: {
@@ -176,7 +177,23 @@ export default function OlympiadDetailsPage() {
       },
       body: JSON.stringify({ dict: data }),
     });
+    if (response2.ok) {
+      setStatus("Olympiad added to hub successfully.");
+      setIsSuccess(true);
+    } else {
+      setStatus("Failed to add olympiad to hub.");
+    }
     setIsSaving(false);
+  }
+
+  async function return_to_olymp() {
+    if (!olympiadId) {
+      return;
+    }
+    setIsSuccess(false);
+    setSendToHub(false);
+    router.push(`/my_olympiads/${olympiadId}`);
+    router.refresh();
   }
 
   if (!isLoaded || isLoading) {
@@ -294,7 +311,6 @@ export default function OlympiadDetailsPage() {
           {sendToHub && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
               <div className="w-full max-w-xl rounded-3xl bg-white shadow-2xl">
-
                 <div className="border-b border-slate-100 p-6">
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100">
@@ -313,13 +329,11 @@ export default function OlympiadDetailsPage() {
                 </div>
 
                 <div className="space-y-6 p-6">
-
                   <div>
                     <div className="mb-3 flex items-center justify-between">
                       <label className="font-medium text-slate-800">
                         Difficulty Rating
                       </label>
-
                       <span className="rounded-full bg-indigo-100 px-3 py-1 text-sm font-semibold text-indigo-700">
                         {difficulty}/10
                       </span>
@@ -391,6 +405,33 @@ export default function OlympiadDetailsPage() {
                     </button>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {isSuccess && (
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/40 p-4">
+              <div className="flex flex-col items-center justify-center gap-3 p-6 rounded-3xl bg-white shadow-xl">
+                <div className="flex flex-row items-center justify-center gap-3 p-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg>
+                  <p className="text-sm font-medium text-slate-900 ">Olympiad saved!</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={return_to_olymp}
+                  className="rounded-xl bg-indigo-600 px-4 py-2 font-semibold text-white shadow-md hover:bg-indigo-500 hover:shadow-lg hover:px-4.5 hover:py-2.5 duration-300" 
+                >
+                  Return to Olympiad
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {isSaving && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+              <div className="flex flex-row items-center justify-center gap-3 p-6 rounded-3xl bg-white shadow-xl">
+                <Spinner className="h-10 w-10"/>
+                <p className="text-sm font-medium text-slate-900 ">Saving...</p>
               </div>
             </div>
           )}
