@@ -163,11 +163,13 @@ export default function OlympiadDetailsPage() {
       },
       body: JSON.stringify({ url: editUrl}),
     })
-    const data = await response.json();
-    console.log(data);
+    const { data } = await response.json();
+    if (data.error) {
+      console.error("Error:", data.error);
+    }
     data.difficulty = difficulty;
     data.dashed_name = data.name.replace(/\s+/g, "-").toLowerCase();
-    await fetch(`/api/add_to_hub`, {
+    const response2 = await fetch(`/api/add_to_hub`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
