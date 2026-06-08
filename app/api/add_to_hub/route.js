@@ -16,8 +16,10 @@ export async function POST(req) {
     }
 
     const { dict } = await req.json();
+    console.log(dict);
 
     const name = Array.isArray(dict.name) ? dict.name[0] : dict.name;
+    const dashed_name = Array.isArray(dict.dashed_name) ? dict.dashed_name[0] : dict.dashed_name;
     const url = Array.isArray(dict.url) ? dict.url[0] : dict.url;
     const billing = Array.isArray(dict.billing) ? dict.billing[0] : dict.billing;
     const difficulty = Array.isArray(dict.difficulty) ? dict.difficulty[0] : dict.difficulty;
@@ -34,6 +36,7 @@ export async function POST(req) {
         organizers,
         rewards,
         difficulty,
+        dashed_name,
         url
       })
       .select('id')

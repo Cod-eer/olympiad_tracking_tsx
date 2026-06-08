@@ -164,7 +164,9 @@ export default function OlympiadDetailsPage() {
       body: JSON.stringify({ url: editUrl}),
     })
     const data = await response.json();
+    console.log(data);
     data.difficulty = difficulty;
+    data.dashed_name = data.name.replace(/\s+/g, "-").toLowerCase();
     await fetch(`/api/add_to_hub`, {
       method: "POST",
       headers: {
