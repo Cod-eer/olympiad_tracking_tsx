@@ -7,6 +7,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+const toTimestamp = (date) => {
+  const [dd, mm, yyyy] = date.split('-');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 
 export async function POST(req) {
   try {

@@ -77,7 +77,19 @@ export default function OlympiadHubPage() {
     }
   }
 
-
+  async function saveOlympiad() {
+    try {
+      const response = await fetch(`/api/olympiad_hub/${name}`, {
+        method: "PUT",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save olympiad.");
+      }
+    } catch (saveError) {
+      const message = saveError instanceof Error ? saveError.message : "Failed to save olympiad.";
+      setError(message);
+    }
+  }
   useEffect(() => {
     if (isLoaded && isSignedIn && name) {
       loadOlympiadData();
@@ -113,8 +125,8 @@ export default function OlympiadHubPage() {
   return (
     <main className="mx-auto max-w-5xl p-6">
       <div className="mb-5 flex items-center justify-between gap-3">
-        <Link href="/my_olympiads" className="text-sm font-medium text-slate-600 hover:text-slate-900">
-          ← Back to my olympiads
+        <Link href="/olympiad_hub" className="text-sm font-medium text-slate-600 hover:text-slate-900">
+          ← Back to the Hub
         </Link>
       </div>
 
@@ -136,6 +148,13 @@ export default function OlympiadHubPage() {
                   </a>
                 )}
               </div>
+              <button
+                type="button"
+                className="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-slate-900/10 hover:bg-slate-700 hover:px-4.5 hover:py-2.5 duration-300 ease-in-out"
+                onClick={saveOlympiad}
+              >
+                Add to calendar
+              </button>
               <div className="mt-4 grid gap-3 text-sm text-slate-700 md:grid-cols-3">
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p className="font-semibold text-slate-900">Organizers</p>
