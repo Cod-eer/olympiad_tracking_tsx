@@ -26,11 +26,11 @@ export async function POST(req) {
     const name = Array.isArray(dict.name) ? dict.name[0] : dict.name;
     const dashed_name = Array.isArray(dict.dashed_name) ? dict.dashed_name[0] : dict.dashed_name;
     const url = Array.isArray(dict.url) ? dict.url[0] : dict.url;
-    const billing = Array.isArray(dict.billing) ? dict.billing[0] : dict.billing;
     const difficulty = Array.isArray(dict.difficulty) ? dict.difficulty[0] : dict.difficulty;
-    const requirements = Array.isArray(dict.requirements) ? dict.requirements[0] : dict.requirements;
-    const organizers = Array.isArray(dict.organizers) ? dict.organizers[0] : dict.organizers;
-    const rewards = Array.isArray(dict.rewards) ? dict.rewards[0] : dict.rewards;
+    const billing = Array.isArray(dict.billing) ? dict.billing : [dict.billing];
+    const requirements = Array.isArray(dict.requirements) ? dict.requirements : [dict.requirements];
+    const organizers = Array.isArray(dict.organizers) ? dict.organizers : [dict.organizers];
+    const rewards = Array.isArray(dict.rewards) ? dict.rewards : [dict.rewards];
 
     const { data: insertedOlympiad, error: insertError } = await supabase
       .from('verified_olympiads')
@@ -46,6 +46,13 @@ export async function POST(req) {
       })
       .select('id')
       .single();
+    
+    if (insertError) {
+      throw insertError;
+    }
+    if (!insertedOlympiad) {
+      return NextResponse.json({ error: 'Failed to share olympiad' }, { status: 500 });
+    }
 
     for (const i of dict.dates) {
       const dateStart = toTimestamp(i.dateStart);

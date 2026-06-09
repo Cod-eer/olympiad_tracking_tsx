@@ -11,10 +11,10 @@ type Olympiad = {
   id: number;
   name: string;
   url?: string | null;
-  organizers?: string | null;
-  fees?: string | null;
-  rewards?: string | null;
-  requirements?: string | null;
+  organizers?: string[] | null;
+  fees?: string[] | null;
+  rewards?: string[] | null;
+  requirements?: string[] | null;
 };
 
 type OlympiadEvent = {
@@ -158,19 +158,35 @@ export default function OlympiadHubPage() {
               <div className="mt-4 grid gap-3 text-sm text-slate-700 md:grid-cols-3">
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p className="font-semibold text-slate-900">Organizers</p>
-                  <p className="mt-1 text-slate-600">{olympiad.organizers || "Not provided"}</p>
+                  {olympiad.organizers?.map((org) => (
+                    <li className="mt-1 text-slate-600" key={org}>
+                      {org}
+                    </li>
+                  ))}
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p className="font-semibold text-slate-900">Fees</p>
-                  <p className="mt-1 text-slate-600">{olympiad.fees || "Not provided"}</p>
+                  {olympiad.fees?.map((fee) => (
+                    <li className="mt-1 text-slate-600" key={fee}>
+                      {fee}
+                    </li>
+                  ))}
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p className="font-semibold text-slate-900">Eligibility</p>
-                  <p className="mt-1 text-slate-600">{olympiad.requirements || "Not provided"}</p>
+                  {olympiad.requirements?.map((req) => (
+                    <li className="mt-1 text-slate-600" key={req}>
+                      {req}
+                    </li>
+                  ))}
                 </div>
                 <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
                   <p className="font-semibold text-slate-900">Prizes</p>
-                  <p className="mt-1 text-slate-600">{olympiad.rewards || "Not provided"}</p>
+                  {olympiad.rewards?.map((reward) => (
+                    <li className="mt-1 text-slate-600" key={reward}>
+                      {reward}
+                    </li>
+                  ))}
                 </div>
               </div>
             </div>

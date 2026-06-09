@@ -83,7 +83,7 @@ export async function PUT(req, { params }) {
 
     const { data: eventsData, error: eventsError } = await supabase
       .from('verified_events')
-      .select('action, date_start, date_end')
+      .select('id, action, date_start, date_end')
       .eq('olympiad_id', olympiad.id)
 
     if (eventsError) {
@@ -98,7 +98,10 @@ export async function PUT(req, { params }) {
         action: i.action,
         date_start: i.date_start,
         date_end: i.date_end,
-      });
+      })
+      .select('id')
+      .single();
+
       if (eventError) {
         if (eventError.code === '23505') continue;
         throw eventError;
@@ -110,6 +113,7 @@ export async function PUT(req, { params }) {
         user_id: userId,
         role: (userId === process.env.BASE_USER_ID) ? 'admin' : 'viewer'
       })
+
       if (accessError) {
         if (accessError.code === '23505') continue;
         throw accessError;

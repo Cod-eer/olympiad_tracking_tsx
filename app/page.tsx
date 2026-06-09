@@ -110,7 +110,7 @@ export default function Landing() {
                     <h2 className="mb-3 text-2xl font-semibold text-slate-800">Our Goals</h2>
                     <ul className="list-disc space-y-2 pl-5 text-slate-600">
                         {goals.map((goal) => (
-                            <li key={goal}>{goal}</li>
+                            <li className="text-slate-800 text-sm" key={goal}>{goal}</li>
                         ))}
                     </ul>
                 </div>

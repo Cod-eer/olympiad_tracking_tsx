@@ -26,10 +26,10 @@ export async function POST(req) {
     // Fix arrays → strings
     const name = Array.isArray(dict.name) ? dict.name[0] : dict.name;
     const url = Array.isArray(dict.url) ? dict.url[0] : dict.url;
-    const billing = Array.isArray(dict.billing) ? dict.billing[0] : dict.billing;
-    const requirements = Array.isArray(dict.requirements) ? dict.requirements[0] : dict.requirements;
-    const organizers = Array.isArray(dict.organizers) ? dict.organizers[0] : dict.organizers;
-    const rewards = Array.isArray(dict.rewards) ? dict.rewards[0] : dict.rewards;
+    const billing = Array.isArray(dict.billing) ? dict.billing : [dict.billing];
+    const requirements = Array.isArray(dict.requirements) ? dict.requirements : [dict.requirements];
+    const organizers = Array.isArray(dict.organizers) ? dict.organizers : [dict.organizers];
+    const rewards = Array.isArray(dict.rewards) ? dict.rewards : [dict.rewards];
 
     const { data: insertedOlympiad, error: insertError } = await supabase
       .from('olympiads')
