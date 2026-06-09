@@ -52,10 +52,11 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
         <body className={`--font-geist-sans --font-geist-mono antialiased bg-white`}>
           <SpeedInsights/>
           <header className="p-4 relative">
-            <div className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8">
-              <Link className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-8" href="/">
+            <div className="flex flex-row-reverse text-2xl font-bold rounded text-center justify-center w-full bg-[#001f3f] text-white p-3">
+              <Link className="text-2xl font-bold rounded text-center w-full bg-[#001f3f] text-white p-3" href="/">
                 Trackolymp.tech
               </Link>
+              <a href="https://www.producthunt.com/products/olympiad-tracker?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-olympiad-tracker" target="_blank" rel="noopener noreferrer"><img alt="Olympiad Tracker - Olympiad calendar helping you track competitions | Product Hunt" width="250" height="54" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1141101&amp;theme=neutral&amp;t=1781031084195" /></a>
             </div>
             <div className="absolute top-0.5 bottom-2 right-4 flex items-center gap-4 mr-4 h-full">
               <ThemeToggle />
