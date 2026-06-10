@@ -66,6 +66,7 @@ export default function OlympiadHubPage() {
       }
 
       setOlympiad(data.olympiad);
+      console.log("organizers", olympiad?.organizers);
       setEvents(data.events || []);
       setEditName(data.olympiad?.name || "");
       setEditUrl(data.olympiad?.url || "");
@@ -85,6 +86,7 @@ export default function OlympiadHubPage() {
       if (!response.ok) {
         throw new Error("Failed to save olympiad.");
       }
+      setStatus("Olympiad added to calendar successfully!");
     } catch (saveError) {
       const message = saveError instanceof Error ? saveError.message : "Failed to save olympiad.";
       setError(message);
@@ -156,37 +158,57 @@ export default function OlympiadHubPage() {
                 Add to calendar
               </button>
               <div className="mt-4 grid gap-3 text-sm text-slate-700 md:grid-cols-3">
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-900">Organizers</p>
-                  {olympiad.organizers?.map((org) => (
-                    <li className="mt-1 text-slate-600" key={org}>
-                      {org}
-                    </li>
-                  ))}
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="mb-3 font-semibold text-slate-900"> Organizers </p>
+                  <div className="flex flex-wrap gap-2">
+                    {olympiad.organizers?.map((org, i) => (
+                      <span
+                        key={`${org}-${i}`}
+                        className="rounded-2xl bg-indigo-100 px-3 py-1 text-sm font-medium text-blue-700"
+                      >
+                        {org}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-900">Fees</p>
-                  {olympiad.fees?.map((fee) => (
-                    <li className="mt-1 text-slate-600" key={fee}>
-                      {fee}
-                    </li>
-                  ))}
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="mb-3 font-semibold text-slate-900"> Fees </p>
+                  <div className="flex flex-wrap gap-2">
+                    {olympiad.fees?.map((fee, i) => (
+                      <span
+                        key={`${fee}-${i}`}
+                        className="rounded-2xl bg-indigo-100 px-3 py-1 text-sm font-medium text-blue-700"
+                      >
+                        {fee}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-900">Eligibility</p>
-                  {olympiad.requirements?.map((req) => (
-                    <li className="mt-1 text-slate-600" key={req}>
-                      {req}
-                    </li>
-                  ))}
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="mb-3 font-semibold text-slate-900"> Requirements </p>
+                  <div className="flex flex-wrap gap-2">
+                    {olympiad.requirements?.map((req, i) => (
+                        <span
+                          key={`${req}-${i}`}
+                          className="rounded-2xl bg-indigo-100 px-3 py-1 text-sm font-medium text-blue-700"
+                        >
+                          {req}
+                        </span>
+                      ))}
+                  </div>
                 </div>
-                <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                  <p className="font-semibold text-slate-900">Prizes</p>
-                  {olympiad.rewards?.map((reward) => (
-                    <li className="mt-1 text-slate-600" key={reward}>
-                      {reward}
-                    </li>
-                  ))}
+                <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                  <p className="mb-3 font-semibold text-slate-900"> Prizes </p>
+                  <div className="flex flex-wrap gap-2">
+                    {olympiad.rewards?.map((reward, i) => (
+                      <span
+                        key={`${reward}-${i}`}
+                        className="rounded-2xl bg-indigo-100 px-3 py-1 text-sm font-medium text-blue-700"
+                      >
+                        {reward}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -200,12 +222,12 @@ export default function OlympiadHubPage() {
               <div className="mt-4 space-y-3">
                 {events.map((event) => (
                   //console.log(event),
-                  <article key={event.id} className="rounded-xl border border-slate-200 p-4">
+                  <div key={event.id} className="rounded-xl border border-slate-200 p-4">
                     <h3 className="font-semibold text-slate-900">{event.action}</h3>
                     <p className="mt-1 text-sm text-slate-600">
                       {toInputDate(event.start)} → {toInputDate(event.end)}
                     </p>
-                  </article>
+                  </div>
                 ))}
               </div>
             )}

@@ -25,30 +25,58 @@ export default function OlympiadHub() {
     }, []);
 
     return (
-        <div className="flex flex-col items-center min-h-screen p-4 mt-3">
-            <h1 className="text-2xl font-bold mb-4">Olympiad Hub</h1>
-            <input
+        <div className="mx-auto max-w-6xl px-6 py-10">
+            <div className="mb-10 text-center">
+              <h1 className="text-5xl font-bold tracking-tight">
+                Olympiad Hub
+              </h1>
+              <p className="mt-3 text-slate-500">
+                Discover international olympiads, competitions and challenges.
+              </p>
+            </div>
+            <div className="mx-auto mb-8 max-w-2xl">
+              <input
                 type="text"
                 value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search by olympiad or event"
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search olympiads..."
+                className=" w-full rounded-2xl border border-slate-200 bg-white px-5 py-4 text-lg shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-4 focus:ring-indigo-100"
+              />
+            </div>
+            <div className="mb-8 flex items-center justify-between">
+              <p className="text-slate-500">
+                {filteredOlympiads.length} olympiads available
+              </p>
+            </div>
             {filteredOlympiads.length === 0 ? (
-                <p>No olympiads found.</p>
+                <p className="text-slate-500 text-center text-sm">No olympiads found.</p>
             ) : (
-                <ul className="space-y-4">
+                <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
                     {filteredOlympiads.map((olympiad) => (
-                        <li key={olympiad.id} className="border p-4 rounded">
+                        <div
+                          key={olympiad.id}
+                          className=" group rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                        >
                             <div className="flex justify-between mb-2">
-                                <h2 className="text-xl font-bold">{olympiad.name}</h2>
-                                <button className="text-sm text-blue-500 hover:underline" onClick={() => router.push(`/olympiad_hub/${olympiad.name.replace(/\s+/g, "-").toLowerCase()}`)}>
-                                    View Details
+                                <div className="flex flex-col items-center gap-2 ml-5">
+                                  <h3 className="text-xl font-bold">{olympiad.name}</h3>
+                                  <p className="mt-4 text-sm text-slate-500 line-clamp-2">
+                                    {olympiad.organizers?.slice(0, 2).join(" • ")}
+                                  </p>
+                                </div>
+                                
+                                <button
+                                  onClick={() =>
+                                    router.push(`/olympiad_hub/${olympiad.dashed_name}`)
+                                  }
+                                  className="rounded-xl bg-slate-900 py-6 h-full px-3 font-semibold text-white transition hover:bg-slate-700"
+                                >
+                                  View Olympiad
                                 </button>
                             </div>
-                        </li>
+                        </div>
                     ))}
-                </ul>
+                </div>
             )}
         </div>
 

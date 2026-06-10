@@ -156,7 +156,7 @@ export default function OlympiadDetailsPage() {
     if (!olympiadId) {
       return;
     }
-    setIsSuccess(true);
+    setIsSaving(true);
     const response = await fetch(`/api/call_result`, {
       method: "POST",
       headers: {

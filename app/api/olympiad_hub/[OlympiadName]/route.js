@@ -13,7 +13,7 @@ function getAuthorizedUserId(req) {
 
 export async function GET(req, { params }) {
   try {
-    const { OlympiadName } = await params;
+    const { OlympiadName } = params;
     const userId = getAuthorizedUserId(req);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -37,8 +37,9 @@ export async function GET(req, { params }) {
 
     const { data: eventsData, error: eventsError } = await supabase
       .from('verified_events')
-      .select('action, date_start, date_end')
+      .select('id, action, date_start, date_end')
       .eq('olympiad_id', olympiad.id)
+      
 
     if (eventsError) {
       throw eventsError;
@@ -50,7 +51,7 @@ export async function GET(req, { params }) {
       start: event.date_start,
       end: event.date_end,
     }));
-
+    console.log(events);
     return NextResponse.json({ olympiad : olympiad, events: events });
 
   } catch (error) {
@@ -60,7 +61,8 @@ export async function GET(req, { params }) {
 
 export async function PUT(req, { params }) {
   try {
-    const { OlympiadName } = await params;
+    const { OlympiadName } = params;
+    console.log("Received PUT request for Olympiad:", OlympiadName);
     const userId = getAuthorizedUserId(req);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -74,6 +76,7 @@ export async function PUT(req, { params }) {
     if (olympiadError) {
       throw olympiadError;
     }
+    console.log(olympiadData);
 
     if (!olympiadData || olympiadData.length === 0) {
       return NextResponse.json({ error: 'Olympiad not found' }, { status: 404 });
@@ -85,6 +88,8 @@ export async function PUT(req, { params }) {
       .from('verified_events')
       .select('id, action, date_start, date_end')
       .eq('olympiad_id', olympiad.id)
+
+    console.log(eventsData);
 
     if (eventsError) {
       throw eventsError;
@@ -109,7 +114,7 @@ export async function PUT(req, { params }) {
       const { data: accessData, error: accessError } = await supabase
       .from('event_access')
       .insert({
-        event_id: eventData[0].id,
+        event_id: eventData.id,
         user_id: userId,
         role: (userId === process.env.BASE_USER_ID) ? 'admin' : 'viewer'
       })

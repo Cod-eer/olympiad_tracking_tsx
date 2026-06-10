@@ -47,7 +47,10 @@ async function ensureOlympiad({ olympiadId, olympiadName, olympiadUrl }) {
 
 export async function PUT(req, { params }) {
   try {
-    //console.log(params);
+    const { userId } = getAuth(req);
+    if (!userId) {
+      return new Response("Unauthorized", { status: 401 });
+    }
     const data = await params;
     const eventId = Number(data.EventId);
     console.log('Parsed eventId:', eventId);
@@ -118,7 +121,10 @@ export async function PUT(req, { params }) {
 
 export async function DELETE(req, { params }) {
   try {
-    //console.log(params);
+    const { userId } = getAuth(req);
+    if (!userId) {
+      return new Response("Unauthorized", { status: 401 });
+    }
     const data = await params;
     const eventId = Number(data.EventId);
     if (!Number.isInteger(eventId)) {

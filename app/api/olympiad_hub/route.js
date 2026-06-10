@@ -19,7 +19,7 @@ export async function GET(req) {
 
     const { data: olympiads, error: error } = await supabase
         .from('verified_olympiads')
-        .select(`id, name, fees, requirements, organizers, rewards, difficulty, url`)
+        .select(`id, name, fees, requirements, organizers, rewards, difficulty, url, dashed_name`)
         .order('difficulty', { ascending: true });
 
     if (error) {

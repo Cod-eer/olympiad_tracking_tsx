@@ -7,6 +7,7 @@ type ParsedData = {
   name: string;
   url: string;
   difficulty: number;
+  dashed_name: string;
   dates: any[];
   billing: any[];
   requirements: any[];
@@ -75,6 +76,10 @@ export default function ResultsPage() {
   async function handleAddToHub() {
     if (!data) return;
     data.difficulty = difficulty;
+    console.log("name add", data.name);
+    data.dashed_name = data.name.replace(/\s+/g, "-").toLowerCase();
+    console.log("dashed name", data.dashed_name);
+    console.log("data to send", data);
     try {
       const response = await fetch("/api/add_to_hub", {
         method: "POST",
@@ -157,21 +162,22 @@ export default function ResultsPage() {
               Visit website ↗
             </a>
           </div>
-          <button
-            type="button"
-            onClick={setIsSharing.bind(null, true)}
-            className="rounded-xl bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 hover:px-5.5 hover:py-3 duration-300"
-          >
-            Share on OlympHub
-          </button>
-          <button
-            type="button"
-            onClick={handleAddEvent}
-            className="rounded-xl bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 hover:px-5.5 hover:py-3 duration-300"
-          >
-            Track Olympiad
-          </button>
-
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={setIsSharing.bind(null, true)}
+              className="rounded-xl bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 hover:px-5.5 hover:py-3 duration-300"
+            >
+              Share on OlympHub
+            </button>
+            <button
+              type="button"
+              onClick={handleAddEvent}
+              className="rounded-xl bg-slate-900 px-5 py-2.5 font-medium text-white hover:bg-slate-700 hover:px-5.5 hover:py-3 duration-300"
+            >
+              Track Olympiad
+            </button>
+          </div>
         </div>
       </div>
 
