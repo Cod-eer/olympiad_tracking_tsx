@@ -193,7 +193,6 @@ export default function MyOlympiadsPage() {
               <div>
                 <h2 className="text-lg font-semibold">{olympiad.name}</h2>
                 {completedSet.has(olympiad.id) && <p className="text-sm text-emerald-700">Completed</p>}
-
                 {olympiad.url && (
                   <a href={olympiad.url} target="_blank" rel="noreferrer" className="text-sm text-blue-600">
                     Visit website
