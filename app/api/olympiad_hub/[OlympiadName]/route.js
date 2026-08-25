@@ -98,27 +98,28 @@ export async function PUT(req, { params }) {
       .select('id, name, url, organizers, fees, rewards, requirements')
       .eq('dashed_name', OlympiadName)
       .limit(1);
+
     if (olympiadError) {
       throw olympiadError;
     }
-    console.log(olympiadData);
 
     if (!olympiadData || olympiadData.length === 0) {
       return NextResponse.json({ error: 'Olympiad not found' }, { status: 404 });
     }
 
+    // 1. Define verifiedOlympiad FIRST
+    const verifiedOlympiad = olympiadData[0];
+
+    // 2. Query events using verifiedOlympiad.id
     const { data: eventsData, error: eventsError } = await supabase
       .from('verified_events')
       .select('id, action, date_start, date_end')
       .eq('olympiad_id', verifiedOlympiad.id);
 
-    console.log(eventsData);
-
     if (eventsError) {
       throw eventsError;
     }
 
-    const verifiedOlympiad = olympiadData[0];
     const { data: localOlympiads, error: localError } = await supabase
       .from('olympiads')
       .select('id, name, url, organizers, fees, rewards, requirements')
@@ -127,9 +128,11 @@ export async function PUT(req, { params }) {
     if (localError) {
       throw localError;
     }
+
     const existingOlympiad = localOlympiads?.find(
       (local) => isExactMatch(local, verifiedOlympiad)
     );
+
     let localOlympiadId;
     if (existingOlympiad) {
       localOlympiadId = existingOlympiad.id;
@@ -146,6 +149,7 @@ export async function PUT(req, { params }) {
         })
         .select('id')
         .single();
+
       if (insertError) {
         throw insertError;
       }
@@ -154,27 +158,28 @@ export async function PUT(req, { params }) {
 
     for (const i of eventsData) {
       const { data: eventData, error: eventError } = await supabase
-      .from('olympiad_events')
-      .insert({
-        olympiad_id: localOlympiadId,
-        action: i.action,
-        date_start: i.date_start,
-        date_end: i.date_end,
-      })
-      .select('id')
-      .single();
+        .from('olympiad_events')
+        .insert({
+          olympiad_id: localOlympiadId,
+          action: i.action,
+          date_start: i.date_start,
+          date_end: i.date_end,
+        })
+        .select('id')
+        .single();
 
       if (eventError) {
         if (eventError.code === '23505') continue;
         throw eventError;
       }
+
       const { data: accessData, error: accessError } = await supabase
-      .from('event_access')
-      .insert({
-        event_id: eventData.id,
-        user_id: userId,
-        role: (userId === process.env.BASE_USER_ID) ? 'admin' : 'viewer'
-      })
+        .from('event_access')
+        .insert({
+          event_id: eventData.id,
+          user_id: userId,
+          role: (userId === process.env.BASE_USER_ID) ? 'admin' : 'viewer'
+        });
 
       if (accessError) {
         if (accessError.code === '23505') continue;
@@ -184,6 +189,7 @@ export async function PUT(req, { params }) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("PUT Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
