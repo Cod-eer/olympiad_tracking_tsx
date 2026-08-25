@@ -106,13 +106,22 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     const { OlympiadId } = await params;
-    const { EventsError } = await supabase
+    const {data: eventsData, error: eventsError} = await supabase
+      .from('olympiad_events')
+      .select('id')
+      .eq('olympiad_id', OlympiadId);
+    if (eventsError) {
+      throw eventsError;
+    }
+    const { AccessError } = await supabase
       .from('event_access')
       .delete()
-      .eq('olympiad_id', OlympiadId);
-
-    if (EventsError) {
-      throw EventsError;
+      .in(
+        'event_id',
+        eventsData.map(event => event.id)
+      );
+    if (AccessError) {
+      throw AccessError;
     }
     const { OlympiadError } = await supabase
       .from('olympiads')

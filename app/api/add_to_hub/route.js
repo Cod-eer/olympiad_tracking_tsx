@@ -46,8 +46,10 @@ export async function POST(req) {
       })
       .select('id')
       .single();
-    
     if (insertError) {
+      if (insertError.code === '23505') {
+        return NextResponse.json({ exists: 'Olympiad already exists' }, { status: 409 });
+      }
       throw insertError;
     }
     if (!insertedOlympiad) {

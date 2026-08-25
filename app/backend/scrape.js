@@ -1,7 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
-import OpenAI from "openai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { chromium } from "playwright";
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const MODEL = "gemini-3.5-flash-lite";
+const MIN_INTERVAL_MS = 4500;
 
 const systemPrompt = `You are an information extraction engine.
 
@@ -28,7 +31,7 @@ Use this exact JSON schema:
 }
 
 Rules:
-- ALWAYS answer in English.
+- ALWAYS answer in English. If you encounter text in another language, translate it to English.
 - DO NOT use any other languages.
 - If a section is not mentioned, return an empty array (or empty string for name).
 - Convert all dates to dd-mm-yyyy.
@@ -38,14 +41,41 @@ Rules:
 - Be concise and factual.
 - Do not include any additional information.`;
 
-const OpenaiRequest = `Extract the required information from the following webpage text:
+const responseSchema = {
+  type: Type.OBJECT,
+  properties: {
+    name: { type: Type.STRING },
+    dates: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          dateStart: { type: Type.STRING },
+          dateEnd: { type: Type.STRING },
+          description: { type: Type.STRING },
+        },
+        required: ["dateStart", "dateEnd", "description"],
+      },
+    },
+    billing: { type: Type.ARRAY, items: { type: Type.STRING } },
+    requirements: { type: Type.ARRAY, items: { type: Type.STRING } },
+    organizers: { type: Type.ARRAY, items: { type: Type.STRING } },
+    rewards: { type: Type.ARRAY, items: { type: Type.STRING } },
+  },
+  required: ["name", "dates", "billing", "requirements", "organizers", "rewards"],
+};
 
-{text}`;
+const systemInstruction = `You are an information extraction engine.
+Extract information from the provided webpage text according to the given schema.
+Rules:
+- ALWAYS answer in English. If you encounter text in another language, translate it to English.
+- DO NOT use any other languages.
+- If a section is not mentioned, return an empty array (or empty string for name).
+- Convert all dates to dd-mm-yyyy.
+- If starting or ending date is missing, use the available one for both dateStart and dateEnd.
+- If only month/year is available, use day = 01.
+- Do not infer or guess missing data. Be concise and factual.`;
 
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-    baseURL: "https://models.github.ai/inference",
-});
 
 function estimateTokens(text) {
     return Math.ceil(text.split(/\s+/).length * 1.3);
@@ -73,19 +103,21 @@ function chunkText(text, maxTokens) {
     return chunks;
 }
 
-async function extractFromChunk(chunkText) {
-  const messages = [
-    { role: "system", content: systemPrompt },
-    { role: "user", content: OpenaiRequest.replace("{text}", chunkText) },
-  ];
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-4.1",  // or a bigger model if you want more tokens
-    messages,
-    temperature: 0.2,
-  });
-
-  return JSON.parse(response.choices[0].message.content);
+async function extractFromChunk(chunkText, attempt = 0) {
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL,
+      contents: `Extract the required information from the following webpage text:\n\n${chunkText}`,
+      config: { systemInstruction, responseMimeType: "application/json", responseSchema, temperature: 0.2 },
+    });
+    return JSON.parse(response.text);
+  } catch (err) {
+    if (err.status === 429 && attempt < 5) {
+      await sleep(2 ** attempt * 1000);
+      return extractFromChunk(chunkText, attempt + 1);
+    }
+    throw err;
+  }
 }
 
 function mergeUnique(arr) {
@@ -93,40 +125,28 @@ function mergeUnique(arr) {
 }
 
 async function processAllChunks(chunks) {
-  const result = {
-    name: "",
-    dates: [],
-    billing: [],
-    requirements: [],
-    organizers: [],
-    rewards: [],
-  };
+  const result = { name: "", dates: [], billing: [], requirements: [], organizers: [], rewards: [] };
 
   for (let i = 0; i < chunks.length; i++) {
     const data = await extractFromChunk(chunks[i]);
 
-    if (!result.name && data.name) {
-      result.name = data.name;
-    }
-
+    if (!result.name && data.name) result.name = data.name;
     result.dates.push(...(data.dates || []));
     result.billing.push(...(data.billing || []));
     result.requirements.push(...(data.requirements || []));
     result.organizers.push(...(data.organizers || []));
     result.rewards.push(...(data.rewards || []));
+
+    if (i < chunks.length - 1) await sleep(MIN_INTERVAL_MS);
   }
 
-  // Deduplicate
   result.billing = mergeUnique(result.billing);
   result.requirements = mergeUnique(result.requirements);
   result.organizers = mergeUnique(result.organizers);
   result.rewards = mergeUnique(result.rewards);
 
-  // Deduplicate dates by (date + description)
   result.dates = Array.from(
-    new Map(
-      result.dates.map(d => [`${d.date}-${d.description}`, d])
-    ).values()
+    new Map(result.dates.map(d => [`${d.dateStart}-${d.dateEnd}-${d.description}`, d])).values()
   );
 
   return result;

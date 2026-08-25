@@ -13,7 +13,7 @@ function getAuthorizedUserId(req) {
 
 export async function GET(req, { params }) {
   try {
-    const { OlympiadName } = params;
+    const { OlympiadName } = await params;
     const userId = getAuthorizedUserId(req);
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -38,8 +38,7 @@ export async function GET(req, { params }) {
     const { data: eventsData, error: eventsError } = await supabase
       .from('verified_events')
       .select('id, action, date_start, date_end')
-      .eq('olympiad_id', olympiad.id)
-      
+      .eq('olympiad_id', olympiad.id);
 
     if (eventsError) {
       throw eventsError;
@@ -59,9 +58,35 @@ export async function GET(req, { params }) {
   }
 }
 
+function normalize(value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  if (Array.isArray(value)) {
+    return value
+      .map(normalize)
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
+  }
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+  return value;
+}
+
+function isExactMatch(local, verified) {
+  return (
+    JSON.stringify(normalize(local.name)) === JSON.stringify(normalize(verified.name)) &&
+    JSON.stringify(normalize(local.url)) === JSON.stringify(normalize(verified.url)) &&
+    JSON.stringify(normalize(local.organizers)) === JSON.stringify(normalize(verified.organizers)) &&
+    JSON.stringify(normalize(local.fees)) === JSON.stringify(normalize(verified.fees)) &&
+    JSON.stringify(normalize(local.rewards)) === JSON.stringify(normalize(verified.rewards)) &&
+    JSON.stringify(normalize(local.requirements)) === JSON.stringify(normalize(verified.requirements))
+  );
+}
+
 export async function PUT(req, { params }) {
   try {
-    const { OlympiadName } = params;
+    const { OlympiadName } = await params;
     console.log("Received PUT request for Olympiad:", OlympiadName);
     const userId = getAuthorizedUserId(req);
     if (!userId) {
@@ -82,12 +107,10 @@ export async function PUT(req, { params }) {
       return NextResponse.json({ error: 'Olympiad not found' }, { status: 404 });
     }
 
-    const olympiad = olympiadData[0];
-
     const { data: eventsData, error: eventsError } = await supabase
       .from('verified_events')
       .select('id, action, date_start, date_end')
-      .eq('olympiad_id', olympiad.id)
+      .eq('olympiad_id', verifiedOlympiad.id);
 
     console.log(eventsData);
 
@@ -95,11 +118,45 @@ export async function PUT(req, { params }) {
       throw eventsError;
     }
 
+    const verifiedOlympiad = olympiadData[0];
+    const { data: localOlympiads, error: localError } = await supabase
+      .from('olympiads')
+      .select('id, name, url, organizers, fees, rewards, requirements')
+      .eq('name', verifiedOlympiad.name);
+
+    if (localError) {
+      throw localError;
+    }
+    const existingOlympiad = localOlympiads?.find(
+      (local) => isExactMatch(local, verifiedOlympiad)
+    );
+    let localOlympiadId;
+    if (existingOlympiad) {
+      localOlympiadId = existingOlympiad.id;
+    } else {
+      const { data: insertedOlympiad, error: insertError } = await supabase
+        .from('olympiads')
+        .insert({
+          name: verifiedOlympiad.name,
+          url: verifiedOlympiad.url,
+          organizers: verifiedOlympiad.organizers,
+          fees: verifiedOlympiad.fees,
+          rewards: verifiedOlympiad.rewards,
+          requirements: verifiedOlympiad.requirements,
+        })
+        .select('id')
+        .single();
+      if (insertError) {
+        throw insertError;
+      }
+      localOlympiadId = insertedOlympiad.id;
+    }
+
     for (const i of eventsData) {
       const { data: eventData, error: eventError } = await supabase
       .from('olympiad_events')
       .insert({
-        olympiad_id: olympiad.id,
+        olympiad_id: localOlympiadId,
         action: i.action,
         date_start: i.date_start,
         date_end: i.date_end,
