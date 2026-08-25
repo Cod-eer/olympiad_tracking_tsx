@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import { GoogleGenAI, Type } from "@google/genai";
-import { chromium } from "playwright";
+import { chromium } from "playwright-core";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const MODEL = "gemini-3.5-flash-lite";
 const MIN_INTERVAL_MS = 4500;
