@@ -62,12 +62,12 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
               <ThemeToggle />
               <SignedOut>
                 <SignInButton>
-                  <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                  <button className="site-header__auth-button h-9 rounded-full border border-[#6c47ff] bg-white px-4 text-sm font-medium text-[#6c47ff] transition hover:bg-[#f2edff] sm:h-12 sm:px-5 sm:text-base">
                     Sign In
                   </button>
                 </SignInButton>
                 <SignUpButton>
-                  <button className="bg-[#6c47ff] text-white rounded-full font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 cursor-pointer">
+                  <button className="site-header__auth-button h-9 rounded-full bg-[#6c47ff] px-4 text-sm font-medium text-white transition hover:bg-[#5838d6] sm:h-12 sm:px-5 sm:text-base">
                     Sign Up
                   </button>
                 </SignUpButton>

@@ -614,12 +614,6 @@ td[colspan="3"] {
     font-size: 0.75rem;
   }
 
-  .site-header__actions > button {
-    width: 2.25rem;
-    height: 2.25rem;
-    padding: 0;
-  }
-
   main.mx-auto {
     padding-right: 1rem;
     padding-left: 1rem;
