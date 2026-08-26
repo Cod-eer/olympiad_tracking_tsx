@@ -283,11 +283,14 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                     <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
                         <h3 className="text-lg font-semibold text-slate-900">Create event for {createDate}</h3>
                         <div className="mt-4 space-y-3">
+                            <span className="text-sm text-slate-500">Select Olympiad</span>
                             <select className="w-full rounded-lg border border-slate-300 p-2" value={createOlympiadId} onChange={(e) => setCreateOlympiadId(e.target.value)}>
-                                <option value="">Select olympiad</option>
+                                <option value="">Select Olympiad</option>
                                 {olympiads.map((olympiad) => <option key={olympiad.id} value={olympiad.id}>{olympiad.name}</option>)}
                             </select>
+                            <span className="text-sm text-slate-500">Event name</span>
                             <input className="w-full rounded-lg border border-slate-300 p-2" placeholder="Event name" value={createTitle} onChange={(e) => setCreateTitle(e.target.value)} />
+                            <span className="text-sm text-slate-500">End date</span>
                             <input className="w-full rounded-lg border border-slate-300 p-2" type="date" value={createEndDate} min={createDate} onChange={(e) => setCreateEndDate(e.target.value)} />
                         </div>
                         <div className="mt-5 flex justify-end gap-2">
@@ -302,13 +305,17 @@ export default function Calendar({ events, onEventsChanged }: { events: Calendar
                     <div className="w-full max-w-md rounded-xl bg-white p-5 shadow-2xl">
                         <h3 className="text-lg font-semibold text-slate-900">Edit event</h3>
                         <div className="mt-4 space-y-3">
-                            <select className="w-full rounded-lg border border-slate-300 p-2" value={editOlympiadId} onChange={(e) => setEditOlympiadId(e.target.value)}>
-                                <option value="">Select olympiad</option>
+                            <span className="text-sm text-slate-500">Select Olympiad</span>
+                            <select id="olympiadId" className="w-full rounded-lg border border-slate-300 p-2" value={editOlympiadId} onChange={(e) => setEditOlympiadId(e.target.value)}>
+                                <option value="">Select Olympiad</option>
                                 {olympiads.map((olympiad) => <option key={olympiad.id} value={olympiad.id}>{olympiad.name}</option>)}
                             </select>
-                            <input className="w-full rounded-lg border border-slate-300 p-2" placeholder="Event name" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-                            <input className="w-full rounded-lg border border-slate-300 p-2" type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
-                            <input className="w-full rounded-lg border border-slate-300 p-2" type="date" value={editEndDate} min={editStartDate} onChange={(e) => setEditEndDate(e.target.value)} />
+                            <span className="text-sm text-slate-500">Event name</span>
+                            <input id="EventName" className="w-full rounded-lg border border-slate-300 p-2" placeholder="Event name" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                            <span className="text-sm text-slate-500">Start date</span>
+                            <input id="EventStartDate" className="w-full rounded-lg border border-slate-300 p-2" type="date" value={editStartDate} onChange={(e) => setEditStartDate(e.target.value)} />
+                            <span className="text-sm text-slate-500">End date</span>
+                            <input id="EventEndDate" className="w-full rounded-lg border border-slate-300 p-2" type="date" value={editEndDate} min={editStartDate} onChange={(e) => setEditEndDate(e.target.value)} />
                         </div>
                         <div className="mt-5 flex justify-between gap-2">
                             <button type="button" className="rounded-md bg-red-600 px-3 py-2 text-sm text-white hover:bg-red-500 hover:px-3.5 hover:py-1.5 duration-300" onClick={() => handleDeleteEvent(editingEventId)}>Delete</button>
