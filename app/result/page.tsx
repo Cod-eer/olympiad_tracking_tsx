@@ -2,6 +2,7 @@
 
 import { SlidersHorizontal } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 
 type ParsedData = {
   name: string;
@@ -146,6 +147,11 @@ export default function ResultsPage() {
 
   return (
     <div className="space-y-6">
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <Link href="/dashboard" className="text-sm font-medium text-slate-600 hover:text-slate-900">
+          ← Back to my calendar
+        </Link>
+      </div>
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
@@ -181,7 +187,7 @@ export default function ResultsPage() {
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 mb-10">
         <InfoCard title="Dates">
           {buildList(displayDates)}
         </InfoCard>
@@ -197,11 +203,11 @@ export default function ResultsPage() {
         <InfoCard title="Rewards">
           {buildList(data.rewards)}
         </InfoCard>
-      </div>
 
-      <InfoCard title="Organizers">
-        {buildList(data.organizers)}
-      </InfoCard>
+        <InfoCard title="Organizers">
+          {buildList(data.organizers)}
+        </InfoCard>
+      </div>
 
       {isSharing && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">

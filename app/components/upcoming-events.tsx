@@ -123,14 +123,14 @@ export default function UpcomingEvents({ limit, refreshToken = 0 }: { limit: num
     if (upcoming_events.length === 0) {
 
         return (
-            <div className="max-w-3xl h-auto mx-auto mt-10 ml-15 flex flex-col items-center
+            <div className="upcoming-events max-w-3xl h-auto mx-auto mt-10 ml-15 flex flex-col items-center
                 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
                 <p className="text-center text-gray-500">There are no upcoming events</p>
             </div>
         );
     }
     return (
-        <div className="max-w-3xl h-auto mx-auto flex flex-col items-center
+        <div className="upcoming-events max-w-3xl h-auto mx-auto flex flex-col items-center
                 bg-white rounded-2xl shadow-lg p-6 border border-gray-200">
             <div className="mb-4 flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h2 className="flex items-center gap-2 text-base font-semibold"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-bell-ring h-4 w-4" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M22 8c0-2.3-.8-4.3-2-6"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path><path d="M4 2C2.8 3.7 2 5.7 2 8"></path></svg>Upcoming</h2>
@@ -149,14 +149,14 @@ export default function UpcomingEvents({ limit, refreshToken = 0 }: { limit: num
                     {briefingStatus}
                 </p>
             )}
-            <ul className="w-full space-y-4">
+            <ul className="upcoming-events__list w-full space-y-4">
                 {upcoming_events.map((event) => {
                     const level = event.urgencyLevel ?? "unknown";
                     const urgencyScore = typeof event.urgency === "number" ? event.urgency.toFixed(2) : "0.00";
                     const isCompleted = Boolean(event.completed);
                     const styles = (isCompleted ? urgencyStyles.completed : urgencyStyles[level]) ?? urgencyStyles.unknown;
                     return (
-                        <li key={`${event.id}-${event.olympiad_id}`} className={`relative overflow-hidden rounded-lg border p-4 shadow-sm transition duration-300 hover:shadow-md ${styles.item} ${isCompleted ? "opacity-50" : ""}`}>
+                        <li key={`${event.id}-${event.olympiad_id}`} className={`upcoming-events__item relative overflow-hidden rounded-lg border p-4 shadow-sm transition duration-300 hover:shadow-md ${styles.item} ${isCompleted ? "opacity-50" : ""}`}>
                             <div className={`rounded-full absolute bottom-4 left-0 top-4 w-1 ${styles.bar}`} />
                             <div className="flex flex-col gap-2 pl-2">
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">

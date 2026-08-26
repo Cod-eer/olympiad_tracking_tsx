@@ -100,14 +100,14 @@ export default function Dashboard() {
 
     return (
         <main className="mx-auto max-w-8xl p-4">
-            <div className="text-center mt-2 flex justify-center items-baseline gap-3 items-stretch">
-                <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
+            <div className="text-center mt-2 flex flex-col justify-center gap-3 sm:flex-row sm:items-stretch">
+                <div className="bg-white w-full sm:w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
                     <p className="p-1 text-sm text-slate-500">Experience</p>
                     <p className="p-1 text-2xl font-semibold">{progress?.experience ?? 0} XP</p>
                     <p className="p-1 text-sm">Level {progress?.level ?? 1}</p>
                 </div>
-                <div className="w-1/2 bg-white rounded-2xl shadow-lg border border-slate-200 flex-column items-center gap-3">
-                    <form id="urlForm" className="ml-5 mt-4 w-full flex gap-3" onSubmit={handleSubmit}>
+                <div className="w-full sm:w-1/2 bg-white rounded-2xl shadow-lg border border-slate-200 flex-column items-center gap-3">
+                    <form id="urlForm" className="mt-4 w-full flex flex-col gap-3 px-4 sm:ml-5 sm:flex-row sm:px-0" onSubmit={handleSubmit}>
                         <input
                             type="text"
                             id="url_bar"
@@ -119,20 +119,20 @@ export default function Dashboard() {
                             Parse
                         </button>
                     </form>
-                    <div className="flex-row justify-start items-center gap-3">
+                    <div className="dashboard-actions flex flex-wrap justify-center gap-2 px-3 pb-4 sm:px-0">
                         <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/manage")}> Manage Events </button>
                         <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/my_olympiads")}> My Olympiads </button>
                         <button type="button" className="mt-4 rounded-lg bg-slate-800 px-4 py-2 m-1 text-sm font-semibold text-white hover:bg-slate-600 hover:px-4.5 hover:py-3 duration-300 ease-in-out" onClick={() => router.push("/olympiad_hub")}> Olympiad Hub </button>
                     </div>
                 </div>
 
-                <div className="bg-white w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
+                <div className="bg-white w-full sm:w-1/4 rounded-2xl shadow-lg border border-slate-200 p-4">
                     <p className="p-1 text-sm text-slate-500">Missed deadlines</p>
                     <p className="p-1 text-lg font-semibold">{missedMessage}</p>
                 </div>
             </div>
             {/* Calendar Component */}
-            <div className="flex flex-row items-top mt-10 gap-10">
+            <div className="flex flex-col items-start mt-10 gap-6 lg:flex-row lg:gap-10">
               {/*<aside className="surface h-fit p-3">
                 <nav className="space-y-1 text-sm">
                   <a className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2" href="/dashboard"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-panel-left h-4 w-4" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg> Dashboard</a>
